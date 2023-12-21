@@ -12,7 +12,14 @@ const SettingsForm = () => {
     if (selectPath1.current && selectPath2.current) {
       const path1 = project.savedPaths[parseInt(selectPath1.current.value)];
       const path2 = project.savedPaths[parseInt(selectPath2.current.value)];
-
+      const morphStyleSheet = document.getElementById("morphAnimationStyle");
+      if (morphStyleSheet) {
+        morphStyleSheet.innerHTML =
+          "@keyframes morphAnim {50%{d: path('" +
+          path2.path +
+          "' );}}#morph path{animation: morphAnim 2s ease 1s infinite alternate;}svg{width:50%;z-index:1;}";
+        document.head.appendChild(morphStyleSheet);
+      }
       const animationSVG = document.getElementById(
         "morph"
       ) as SVGSVGElement | null;
@@ -20,20 +27,12 @@ const SettingsForm = () => {
       if (animationSVG) {
         animationSVG.innerHTML = "";
         animationSVG.setAttribute("viewBox", path1.viewBox);
-        const pathElement = document.createElement("path");
+        const pathElement = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "path"
+        );
         pathElement.setAttribute("d", path1.path);
         animationSVG.appendChild(pathElement);
-        document.body.appendChild(animationSVG.cloneNode(true));
-      }
-
-      const morphStyleSheet = document.createElement("style");
-      //getElementById("morphAnimationStyle") as HTMLStyleElement | null;
-      if (morphStyleSheet) {
-        morphStyleSheet.innerHTML =
-          "@keyframes morphAnim {50%{d: path('" +
-          path2.path +
-          "' );}}#morph path{animation: morphAnim 2s ease 1s infinite alternate;}svg{width=50%}";
-        document.head.appendChild(morphStyleSheet);
       }
     }
   };
