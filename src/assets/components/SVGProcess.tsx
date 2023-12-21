@@ -15,6 +15,9 @@ const SVGProcess = () => {
         "svg"
       ) as SVGSVGElement | null;
       modifiedSVGDiv.current.innerHTML = "";
+      document.body
+        .querySelectorAll("p")
+        .forEach((element) => element.remove());
       if (inputSVG) {
         const modifiedSVG = inputSVG.cloneNode(true) as SVGSVGElement;
         modifiedSVG.querySelectorAll("path").forEach((path) => path.remove());
@@ -26,8 +29,19 @@ const SVGProcess = () => {
             tolerance: 1,
             precision: 2,
           });
-          const vertexCount = simplifiedPath.split("c").length - 1;
+          const curveOperations = simplifiedPath.split("c");
+          const vertexCount = curveOperations.length - 1;
+          let lastPoint = curveOperations[vertexCount].split(" ")[2];
           console.log(vertexCount);
+          //console.log(curveOperations[1]);
+          //console.log(curveOperations[vertexCount]);
+          //const numberedVertexPath = simplifiedPath + ("c" + curveOperations[vertexCount]).repeat(50 - vertexCount);
+          const numberedVertexPath =
+            simplifiedPath + "c0,0 0,0 0,0".repeat(50 - vertexCount);
+          console.log(numberedVertexPath.split("c").length - 1);
+          const outputText = document.createElement("p");
+          outputText.innerHTML = numberedVertexPath;
+          document.body.appendChild(outputText);
           const modifiedSVGPath = svgPath.cloneNode(true) as SVGPathElement;
           modifiedSVGPath.setAttribute("d", simplifiedPath);
           modifiedSVG.appendChild(modifiedSVGPath);
