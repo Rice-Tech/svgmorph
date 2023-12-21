@@ -9,25 +9,27 @@ const SVGProcess = () => {
   const modifiedSVGDiv = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (inputSVGDiv.current) {
+    if (inputSVGDiv.current && modifiedSVGDiv.current) {
       inputSVGDiv.current.innerHTML = settings.svgInput;
       const inputSVG = inputSVGDiv.current.querySelector(
         "svg"
       ) as SVGSVGElement | null;
-      if (inputSVG && modifiedSVGDiv.current) {
-        modifiedSVGDiv.current.innerHTML = "";
+      modifiedSVGDiv.current.innerHTML = "";
+      if (inputSVG) {
         const modifiedSVG = inputSVG.cloneNode(true) as SVGSVGElement;
         modifiedSVG.querySelectorAll("path").forEach((path) => path.remove());
         //const inputViewBox = inputSVG.viewBox;
         const svgPaths = inputSVG.querySelectorAll("path");
         svgPaths.forEach((svgPath) => {
           const points = getSVGPathPoints(svgPath);
-          const simplfiedPath = simplifySvgPath(points, {
+          const simplifiedPath = simplifySvgPath(points, {
             tolerance: 1,
             precision: 2,
           });
+          const vertexCount = simplifiedPath.split("c").length - 1;
+          console.log(vertexCount);
           const modifiedSVGPath = svgPath.cloneNode(true) as SVGPathElement;
-          modifiedSVGPath.setAttribute("d", simplfiedPath);
+          modifiedSVGPath.setAttribute("d", simplifiedPath);
           modifiedSVG.appendChild(modifiedSVGPath);
         });
         modifiedSVGDiv.current!.appendChild(modifiedSVG);
