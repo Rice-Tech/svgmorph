@@ -1,21 +1,26 @@
 import SettingsForm from "./assets/components/SettingsForm";
 import SVGProcess from "./assets/components/SVGProcess";
 import { SettingsProvider } from "./assets/components/SettingsProvider";
+import { ProjectProvider } from "./assets/components/ProjectProvider";
 
 export const App = () => {
   return (
     <>
       <SettingsProvider>
-        <SettingsForm />
-        <div>
-        <svg id="morph" viewBox="0 0 43 42" fill="none" stroke="black" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M23.55,16.9c0.19,-2.32 2.5,-11.75 6.52,-8.19c1.91,1.69 1.07,4.61 2.36,6.52c1.46,2.17 7.99,0.48 6.35,5.49c-0.57,1.74 -2.38,0.82 -3.65,1.14c-1.99,0.5 -7.82,1.96 -9.18,3.33c-1.43,1.45 -1.62,10.02 -4.15,10.07c-3.14,0.06 -1.64,-7.72 -3.7,-8.74c-5.43,-2.68 -2.42,12.63 -7.14,8.62c-1.64,-1.39 -1.51,-5.83 -2.69,-7.85c-1.35,-2.3 -5.93,-2.44 -6.8,-4.77c-0.37,-1 1.67,-1.13 1.82,-1.13c3.59,0.13 6.9,-1.14 10.68,-1.63c2.33,-0.3 6.09,-0.81 8.14,-1.97c1.09,-0.62 1.06,-3.34 2.27,-3c1.2,0.33 0.6,4.87 2.79,4.59c1.97,-0.25 -0.31,-9.16 0,-10.61c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0c0,0 0,0 0,0"
-              id="0"
-            ></path>
-          </svg>
-        </div>
-        <SVGProcess />;
+        <ProjectProvider>
+          <SettingsForm />
+          <div id="resultDiv">
+            <svg
+              id="morph"
+              fill="none"
+              stroke="black"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              
+            </svg>
+          </div>
+          <SVGProcess />;
+        </ProjectProvider>
       </SettingsProvider>
     </>
   );

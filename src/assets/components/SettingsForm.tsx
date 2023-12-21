@@ -1,9 +1,42 @@
-import { useContext, ChangeEvent } from "react";
+import { useContext, ChangeEvent, useRef } from "react";
 import { SettingsContext } from "./SettingsProvider";
 import DOMPurify from "dompurify";
+import { ProjectContext } from "./ProjectProvider";
 
 const SettingsForm = () => {
   const { settings, updateSettings } = useContext(SettingsContext)!;
+  const { project } = useContext(ProjectContext)!;
+  const selectPath1 = useRef<HTMLSelectElement>(null);
+  const selectPath2 = useRef<HTMLSelectElement>(null);
+  const handleSelectChange = () => {
+    if (selectPath1.current && selectPath2.current) {
+      const path1 = project.savedPaths[parseInt(selectPath1.current.value)];
+      const path2 = project.savedPaths[parseInt(selectPath2.current.value)];
+
+      const animationSVG = document.getElementById(
+        "morph"
+      ) as SVGSVGElement | null;
+
+      if (animationSVG) {
+        animationSVG.innerHTML = "";
+        animationSVG.setAttribute("viewBox", path1.viewBox);
+        const pathElement = document.createElement("path");
+        pathElement.setAttribute("d", path1.path);
+        animationSVG.appendChild(pathElement);
+        document.body.appendChild(animationSVG.cloneNode(true));
+      }
+
+      const morphStyleSheet = document.createElement("style");
+      //getElementById("morphAnimationStyle") as HTMLStyleElement | null;
+      if (morphStyleSheet) {
+        morphStyleSheet.innerHTML =
+          "@keyframes morphAnim {50%{d: path('" +
+          path2.path +
+          "' );}}#morph path{animation: morphAnim 2s ease 1s infinite alternate;}svg{width=50%}";
+        document.head.appendChild(morphStyleSheet);
+      }
+    }
+  };
 
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>
@@ -55,6 +88,32 @@ const SettingsForm = () => {
         ></textarea>
         <label htmlFor="svgInput">SVG Code</label>
       </div>
+      <select
+        ref={selectPath1}
+        className="form-select"
+        aria-label="Path"
+        onChange={handleSelectChange}
+      >
+        <option disabled>Choose a Saved Path</option>
+        {project.savedPaths.map((path, index) => (
+          <option key={path.id + index} value={index}>
+            {path.id + index}
+          </option>
+        ))}
+      </select>
+      <select
+        ref={selectPath2}
+        className="form-select"
+        aria-label="Path"
+        onChange={handleSelectChange}
+      >
+        <option disabled>Choose a Saved Path</option>
+        {project.savedPaths.map((path, index) => (
+          <option key={path.id + index} value={index}>
+            {path.id + index}
+          </option>
+        ))}
+      </select>
     </div>
   );
 };

@@ -2,9 +2,12 @@ import simplifySvgPath from "@luncheon/simplify-svg-path";
 import { useEffect, useRef, useContext } from "react";
 //import ExternalSvg from "./external.svg";
 import { SettingsContext } from "./SettingsProvider";
+import { ProjectContext } from "./ProjectProvider";
+import { SavedPath } from "./ProjectProvider";
 
 const SVGProcess = () => {
   const { settings } = useContext(SettingsContext)!;
+  const { project } = useContext(ProjectContext)!;
   const inputSVGDiv = useRef<HTMLDivElement>(null);
   const modifiedSVGDiv = useRef<HTMLDivElement>(null);
 
@@ -21,8 +24,11 @@ const SVGProcess = () => {
       if (inputSVG) {
         const modifiedSVG = inputSVG.cloneNode(true) as SVGSVGElement;
         modifiedSVG.querySelectorAll("path").forEach((path) => path.remove());
-        //const inputViewBox = inputSVG.viewBox;
+        const inputViewBox = inputSVG.getAttribute("viewBox") as
+          | string
+          | "0 0 50 50";
         const svgPaths = inputSVG.querySelectorAll("path");
+        const pathsToSave = [] as SavedPath[];
         svgPaths.forEach((svgPath) => {
           const points = getSVGPathPoints(svgPath);
           const simplifiedPath = simplifySvgPath(points, {
@@ -31,22 +37,28 @@ const SVGProcess = () => {
           });
           const curveOperations = simplifiedPath.split("c");
           const vertexCount = curveOperations.length - 1;
-          let lastPoint = curveOperations[vertexCount].split(" ")[2];
           console.log(vertexCount);
-          //console.log(curveOperations[1]);
-          //console.log(curveOperations[vertexCount]);
-          //const numberedVertexPath = simplifiedPath + ("c" + curveOperations[vertexCount]).repeat(50 - vertexCount);
           const numberedVertexPath =
             simplifiedPath + "c0,0 0,0 0,0".repeat(50 - vertexCount);
           console.log(numberedVertexPath.split("c").length - 1);
-          const outputText = document.createElement("p");
-          outputText.innerHTML = numberedVertexPath;
-          document.body.appendChild(outputText);
+          //const outputText = document.createElement("p");
+          //outputText.innerHTML = numberedVertexPath;
+          //document.body.appendChild(outputText);
           const modifiedSVGPath = svgPath.cloneNode(true) as SVGPathElement;
           modifiedSVGPath.setAttribute("d", simplifiedPath);
           modifiedSVG.appendChild(modifiedSVGPath);
+
+          pathsToSave.push({
+            path: numberedVertexPath,
+            viewBox: inputViewBox,
+            id: "testing",
+            fill: "none",
+            stroke: "red",
+          });
         });
+        console.table(project.savedPaths);
         modifiedSVGDiv.current!.appendChild(modifiedSVG);
+        project.addPaths(pathsToSave);
       }
     }
   }, [settings]);
@@ -73,8 +85,10 @@ const SVGProcess = () => {
   }
   return (
     <>
-      <div ref={inputSVGDiv}> </div>
-      <div ref={modifiedSVGDiv}></div>
+      <div ref={inputSVGDiv} id="inputSVGDiv">
+        {" "}
+      </div>
+      <div ref={modifiedSVGDiv} id="modifiedSVGDiv"></div>
     </>
   );
 };
