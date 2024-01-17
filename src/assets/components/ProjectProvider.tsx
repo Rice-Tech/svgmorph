@@ -2,6 +2,7 @@ import { useState, createContext, ReactNode } from "react";
 
 interface SavedPath {
   path: string;
+  inputPath: string;
   viewBox: string;
   id: string;
   fill: string;

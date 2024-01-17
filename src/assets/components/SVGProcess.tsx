@@ -35,12 +35,7 @@ const SVGProcess = () => {
             tolerance: 1,
             precision: 2,
           });
-          const curveOperations = simplifiedPath.split("c");
-          const vertexCount = curveOperations.length - 1;
-          console.log(vertexCount);
-          const numberedVertexPath =
-            simplifiedPath + "c0,0 0,0 0,0".repeat(50 - vertexCount);
-          console.log(numberedVertexPath.split("c").length - 1);
+          
           //const outputText = document.createElement("p");
           //outputText.innerHTML = numberedVertexPath;
           //document.body.appendChild(outputText);
@@ -49,7 +44,8 @@ const SVGProcess = () => {
           modifiedSVG.appendChild(modifiedSVGPath);
 
           pathsToSave.push({
-            path: numberedVertexPath,
+            path: simplifiedPath,
+            inputPath: svgPath.getAttribute("d")!,
             viewBox: inputViewBox,
             id: "testing",
             fill: "none",

@@ -12,11 +12,37 @@ const SettingsForm = () => {
     if (selectPath1.current && selectPath2.current) {
       const path1 = project.savedPaths[parseInt(selectPath1.current.value)];
       const path2 = project.savedPaths[parseInt(selectPath2.current.value)];
+
+      const getVertexCount = (path:string) =>{
+        const curveOperations = path.split("c");
+        return curveOperations.length - 1;
+      }
+      const createStandardPath = (path:string, targetCount) => {
+        const vertexCount = getVertexCount(path)
+        console.log(vertexCount);
+        const numberedVertexPath =
+          path + "c0,0 0,0 0,0".repeat(targetCount - vertexCount);
+        console.log(numberedVertexPath.split("c").length - 1);
+        return numberedVertexPath;
+      };
+
+      const vertexCount1 = getVertexCount(path1.path)
+      const vertexCount2 = getVertexCount(path2.path)
+      let vertexCount;
+      if(vertexCount1>vertexCount2){
+        vertexCount = vertexCount1;
+      }
+      else{
+        vertexCount = vertexCount2;
+      }
+      const numberedpath1 = createStandardPath(path1.path, vertexCount);
+      const numberedpath2 = createStandardPath(path2.path, vertexCount)
+
       const morphStyleSheet = document.getElementById("morphAnimationStyle");
       if (morphStyleSheet) {
         morphStyleSheet.innerHTML =
           "@keyframes morphAnim {50%{d: path('" +
-          path2.path +
+          numberedpath2 +
           "' );}}#morph path{animation: morphAnim 2s ease 1s infinite alternate;}svg{width:50%;z-index:1;}";
         document.head.appendChild(morphStyleSheet);
       }
@@ -31,7 +57,7 @@ const SettingsForm = () => {
           "http://www.w3.org/2000/svg",
           "path"
         );
-        pathElement.setAttribute("d", path1.path);
+        pathElement.setAttribute("d", numberedpath1);
         animationSVG.appendChild(pathElement);
       }
     }
