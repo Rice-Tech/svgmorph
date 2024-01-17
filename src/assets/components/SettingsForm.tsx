@@ -17,12 +17,14 @@ const SettingsForm = () => {
         const curveOperations = path.split("c");
         return curveOperations.length - 1;
       }
-      const createStandardPath = (path:string, targetCount) => {
+      console.log(path1.fill)
+      const createStandardPath = (path:string, targetCount:number) => {
         const vertexCount = getVertexCount(path)
         console.log(vertexCount);
         const numberedVertexPath =
           path + "c0,0 0,0 0,0".repeat(targetCount - vertexCount);
         console.log(numberedVertexPath.split("c").length - 1);
+        
         return numberedVertexPath;
       };
 
@@ -43,7 +45,7 @@ const SettingsForm = () => {
         morphStyleSheet.innerHTML =
           "@keyframes morphAnim {50%{d: path('" +
           numberedpath2 +
-          "' );}}#morph path{animation: morphAnim 2s ease 1s infinite alternate;}svg{width:50%;z-index:1;}";
+          "' ); fill:" + path2.fill +"}}#morph path{animation: morphAnim 2s ease 1s infinite alternate;}svg{width:50%;z-index:1;}";
         document.head.appendChild(morphStyleSheet);
       }
       const animationSVG = document.getElementById(
@@ -58,6 +60,7 @@ const SettingsForm = () => {
           "path"
         );
         pathElement.setAttribute("d", numberedpath1);
+        pathElement.setAttribute("fill", path1.fill)
         animationSVG.appendChild(pathElement);
       }
     }

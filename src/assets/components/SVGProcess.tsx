@@ -35,7 +35,7 @@ const SVGProcess = () => {
             tolerance: 1,
             precision: 2,
           });
-          
+
           //const outputText = document.createElement("p");
           //outputText.innerHTML = numberedVertexPath;
           //document.body.appendChild(outputText);
@@ -48,7 +48,7 @@ const SVGProcess = () => {
             inputPath: svgPath.getAttribute("d")!,
             viewBox: inputViewBox,
             id: "testing",
-            fill: "none",
+            fill: svgPath.getAttribute("fill") || "none",
             stroke: "red",
           });
         });
