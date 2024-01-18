@@ -1,69 +1,126 @@
 import { useContext, ChangeEvent, useRef } from "react";
 import { SettingsContext } from "./SettingsProvider";
 import DOMPurify from "dompurify";
-import { ProjectContext } from "./ProjectProvider";
+import { ProjectContext, SavedPath, SavedSVG } from "./ProjectProvider";
 
 const SettingsForm = () => {
   const { settings, updateSettings } = useContext(SettingsContext)!;
   const { project } = useContext(ProjectContext)!;
   const selectPath1 = useRef<HTMLSelectElement>(null);
   const selectPath2 = useRef<HTMLSelectElement>(null);
-  const handleSelectChange = () => {
-    if (selectPath1.current && selectPath2.current) {
-      const path1 = project.savedPaths[parseInt(selectPath1.current.value)];
-      const path2 = project.savedPaths[parseInt(selectPath2.current.value)];
 
-      const getVertexCount = (path:string) =>{
-        const curveOperations = path.split("c");
-        return curveOperations.length - 1;
-      }
-      console.log(path1.fill)
-      const createStandardPath = (path:string, targetCount:number) => {
-        const vertexCount = getVertexCount(path)
-        console.log(vertexCount);
-        const numberedVertexPath =
-          path + "c0,0 0,0 0,0".repeat(targetCount - vertexCount);
-        console.log(numberedVertexPath.split("c").length - 1);
-        
-        return numberedVertexPath;
-      };
+  const selectSVG1 = useRef<HTMLSelectElement>(null);
+  const selectSVG2 = useRef<HTMLSelectElement>(null);
 
-      const vertexCount1 = getVertexCount(path1.path)
-      const vertexCount2 = getVertexCount(path2.path)
-      let vertexCount;
-      if(vertexCount1>vertexCount2){
-        vertexCount = vertexCount1;
-      }
-      else{
-        vertexCount = vertexCount2;
-      }
-      const numberedpath1 = createStandardPath(path1.path, vertexCount);
-      const numberedpath2 = createStandardPath(path2.path, vertexCount)
-
-      const morphStyleSheet = document.getElementById("morphAnimationStyle");
-      if (morphStyleSheet) {
-        morphStyleSheet.innerHTML =
-          "@keyframes morphAnim {50%{d: path('" +
-          numberedpath2 +
-          "' ); fill:" + path2.fill +"}}#morph path{animation: morphAnim 2s ease 1s infinite alternate;}svg{width:50%;z-index:1;}";
-        document.head.appendChild(morphStyleSheet);
-      }
+  const handleSVGSelectChange = () => {
+    if (!(selectSVG1.current && selectSVG2.current)) {
+      return;
+    }
+    const svg1 = project.savedSVGs[parseInt(selectSVG1.current.value)];
+    const svg2 = project.savedSVGs[parseInt(selectSVG2.current.value)];
+    console.log(svg1.paths.length);
+    console.log(svg2.paths.length);
+    const clearPreviousAnimations = () => {
       const animationSVG = document.getElementById(
         "morph"
       ) as SVGSVGElement | null;
-
       if (animationSVG) {
         animationSVG.innerHTML = "";
-        animationSVG.setAttribute("viewBox", path1.viewBox);
-        const pathElement = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "path"
-        );
-        pathElement.setAttribute("d", numberedpath1);
-        pathElement.setAttribute("fill", path1.fill)
-        animationSVG.appendChild(pathElement);
       }
+
+      const morphStyleSheet = document.getElementById("morphAnimationStyle");
+      if (morphStyleSheet) {
+        morphStyleSheet.innerHTML = "";
+      }
+    };
+
+    clearPreviousAnimations();
+
+    const generateSVGAnimations = (svg1: SavedSVG, svg2: SavedSVG) => {
+      svg1.paths.forEach((path, index) => {
+        animatePaths(path, svg2.paths[index]);
+      });
+    };
+
+    if (svg1.paths.length > svg2.paths.length) {
+      generateSVGAnimations(svg2, svg1);
+    } else {
+      generateSVGAnimations(svg1, svg2);
     }
+  };
+  const handleSelectChange = () => {
+    if (!(selectPath1.current && selectPath2.current)) {
+      return;
+    }
+    const path1 = project.savedPaths[parseInt(selectPath1.current.value)];
+    const path2 = project.savedPaths[parseInt(selectPath2.current.value)];
+    animatePaths(path1, path2);
+  };
+
+  const animatePaths = (path1: SavedPath, path2: SavedPath) => {
+    const getVertexCount = (path: string) => {
+      const curveOperations = path.split("c");
+      return curveOperations.length - 1;
+    };
+    console.log(path1.fill);
+    const createStandardPath = (path: string, targetCount: number) => {
+      const vertexCount = getVertexCount(path);
+      console.log(vertexCount);
+      const numberedVertexPath =
+        path + "c0,0 0,0 0,0".repeat(targetCount - vertexCount);
+      console.log(numberedVertexPath.split("c").length - 1);
+
+      return numberedVertexPath;
+    };
+
+    const vertexCount1 = getVertexCount(path1.path);
+    const vertexCount2 = getVertexCount(path2.path);
+    let vertexCount;
+    if (vertexCount1 > vertexCount2) {
+      vertexCount = vertexCount1;
+    } else {
+      vertexCount = vertexCount2;
+    }
+    const numberedpath1 = createStandardPath(path1.path, vertexCount);
+    const numberedpath2 = createStandardPath(path2.path, vertexCount);
+
+    const index = new Date().getTime();
+    // Add 2nd SVG as style animation
+    const morphStyleSheet = document.getElementById("morphAnimationStyle");
+    if (morphStyleSheet) {
+      morphStyleSheet.innerHTML += `@keyframes morphAnim${index} {
+          50%{
+            d: path('${numberedpath2}' ); 
+            fill:${path2.fill}
+          }
+        }
+        #morph${index}{
+          animation: morphAnim${index} 2s ease 1s infinite alternate;
+        }
+        svg{width:50%;
+          z-index:1;
+        }`;
+      document.head.appendChild(morphStyleSheet);
+    }
+
+    // add first svg as svg on page
+    const animationSVG = document.getElementById(
+      "morph"
+    ) as SVGSVGElement | null;
+    if (!animationSVG) {
+      return;
+    }
+    const newSVG = animationSVG.cloneNode(true) as SVGSVGElement;
+    newSVG.setAttribute("id", `morph${index}`);
+    animationSVG.setAttribute("viewBox", path1.viewBox);
+    const pathElement = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "path"
+    );
+    pathElement.setAttribute("d", numberedpath1);
+    pathElement.setAttribute("fill", path1.fill);
+    pathElement.setAttribute("id", `morph${index}`);
+    animationSVG.appendChild(pathElement);
   };
 
   const handleInputChange = (
@@ -139,6 +196,33 @@ const SettingsForm = () => {
         {project.savedPaths.map((path, index) => (
           <option key={path.id + index} value={index}>
             {path.id + index}
+          </option>
+        ))}
+      </select>
+
+      <select
+        ref={selectSVG1}
+        className="form-select"
+        aria-label="SVG 1 Select"
+        onChange={handleSVGSelectChange}
+      >
+        <option disabled>Choose a Saved SVG</option>
+        {project.savedSVGs.map((svg, index) => (
+          <option key={svg.paths[0].id + index} value={index}>
+            {svg.paths[0].id + index}
+          </option>
+        ))}
+      </select>
+      <select
+        ref={selectSVG2}
+        className="form-select"
+        aria-label="SVG 2 Select"
+        onChange={handleSVGSelectChange}
+      >
+        <option disabled>Choose a Saved SVG</option>
+        {project.savedSVGs.map((svg, index) => (
+          <option key={svg.paths[0].id + index} value={index}>
+            {svg.paths[0].id + index}
           </option>
         ))}
       </select>

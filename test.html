@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      
+      @keyframes morphAnimation {
+        0% {
+          d: path("M10 50 Q 50 10, 90 50 T 170 50"), path("M90 50 Q 50 90, 10 50 T -70 50");
+        }
+        100% {
+          d: path("M10 50 Q 50 90, 90 50 T 170 50");
+        }
+      }
+
+      .morph-svg {
+        width: 200px;
+        height: 200px;
+      }
+      
+
+      @keyframes path1anim {
+        50% {
+          d: path("M10 50 Q 50 90, 90 50 T 170 50");
+          fill: red;
+        }
+      }
+      @keyframes path2anim {
+        50% {
+          d: path("M90 50 Q 50 10, 10 50 T -70 50");
+          fill: yellow;
+        }
+      }
+      #path1{
+        fill:green;
+        animation: path1anim 4s ease-in-out infinite;
+      }
+      #path2{
+        animation: path2anim 4s ease-in-out infinite;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Hello World</h1>
+
+    <svg
+      class="morph-svg"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 100 100"
+    >
+      <g id="initialPaths">
+        <path  id="path1" d="M10 50 Q 50 10, 90 50 T 170 50"  />
+        <path id="path2" d="M90 50 Q 50 90, 10 50 T -70 50" fill="green" />
+      </g>
+    </svg>
+  </body>
+</html>

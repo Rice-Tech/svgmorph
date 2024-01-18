@@ -55,6 +55,7 @@ const SVGProcess = () => {
         console.table(project.savedPaths);
         modifiedSVGDiv.current!.appendChild(modifiedSVG);
         project.addPaths(pathsToSave);
+        project.addSVG({paths:pathsToSave})
       }
     }
   }, [settings]);
