@@ -38,11 +38,16 @@ const SettingsForm = () => {
 
     const generateSVGAnimations = (svg1: SavedSVG, svg2: SavedSVG) => {
       svg1.paths.forEach((path, index) => {
-        animatePaths(path, svg2.paths[index]);
+        if(svg2.paths[index]){
+          animatePaths(svg2.paths[index], path, index);
+        }
+        else{
+          animatePaths(svg2.paths[Math.floor(svg2.paths.length*Math.random())], path, index)
+        }
       });
     };
 
-    if (svg1.paths.length > svg2.paths.length) {
+    if (svg1.paths.length < svg2.paths.length) {
       generateSVGAnimations(svg2, svg1);
     } else {
       generateSVGAnimations(svg1, svg2);
@@ -54,10 +59,10 @@ const SettingsForm = () => {
     }
     const path1 = project.savedPaths[parseInt(selectPath1.current.value)];
     const path2 = project.savedPaths[parseInt(selectPath2.current.value)];
-    animatePaths(path1, path2);
+    animatePaths(path1, path2, 1);
   };
 
-  const animatePaths = (path1: SavedPath, path2: SavedPath) => {
+  const animatePaths = (path1: SavedPath, path2: SavedPath, id:number) => {
     const getVertexCount = (path: string) => {
       const curveOperations = path.split("c");
       return curveOperations.length - 1;
@@ -84,18 +89,17 @@ const SettingsForm = () => {
     const numberedpath1 = createStandardPath(path1.path, vertexCount);
     const numberedpath2 = createStandardPath(path2.path, vertexCount);
 
-    const index = new Date().getTime();
     // Add 2nd SVG as style animation
     const morphStyleSheet = document.getElementById("morphAnimationStyle");
     if (morphStyleSheet) {
-      morphStyleSheet.innerHTML += `@keyframes morphAnim${index} {
+      morphStyleSheet.innerHTML += `@keyframes morphAnim${id} {
           50%{
             d: path('${numberedpath2}' ); 
             fill:${path2.fill}
           }
         }
-        #morph${index}{
-          animation: morphAnim${index} 2s ease 1s infinite alternate;
+        #morph${id}{
+          animation: morphAnim${id} 2s ease 1s infinite alternate;
         }
         svg{width:50%;
           z-index:1;
@@ -111,7 +115,7 @@ const SettingsForm = () => {
       return;
     }
     const newSVG = animationSVG.cloneNode(true) as SVGSVGElement;
-    newSVG.setAttribute("id", `morph${index}`);
+    newSVG.setAttribute("id", `morph${id}`);
     animationSVG.setAttribute("viewBox", path1.viewBox);
     const pathElement = document.createElementNS(
       "http://www.w3.org/2000/svg",
@@ -119,7 +123,7 @@ const SettingsForm = () => {
     );
     pathElement.setAttribute("d", numberedpath1);
     pathElement.setAttribute("fill", path1.fill);
-    pathElement.setAttribute("id", `morph${index}`);
+    pathElement.setAttribute("id", `morph${id}`);
     animationSVG.appendChild(pathElement);
   };
 
