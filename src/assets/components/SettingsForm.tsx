@@ -1,9 +1,11 @@
-import { useContext, ChangeEvent, useRef } from "react";
+import { useContext, useRef, useState } from "react";
 import { SettingsContext } from "./SettingsProvider";
 import DOMPurify from "dompurify";
 import { ProjectContext, SavedPath, SavedSVG } from "./ProjectProvider";
 
 const SettingsForm = () => {
+  const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const { settings, updateSettings } = useContext(SettingsContext)!;
   const { project } = useContext(ProjectContext)!;
   const selectPath1 = useRef<HTMLSelectElement>(null);
@@ -11,58 +13,80 @@ const SettingsForm = () => {
 
   const selectSVG1 = useRef<HTMLSelectElement>(null);
   const selectSVG2 = useRef<HTMLSelectElement>(null);
+  const svgTextRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSVGSelectChange = () => {
-    if (!(selectSVG1.current && selectSVG2.current)) {
-      return;
-    }
-    const svg1 = project.savedSVGs[parseInt(selectSVG1.current.value)];
-    const svg2 = project.savedSVGs[parseInt(selectSVG2.current.value)];
-    console.log(svg1.paths.length);
-    console.log(svg2.paths.length);
-    const clearPreviousAnimations = () => {
-      const animationSVG = document.getElementById(
-        "morph"
-      ) as SVGSVGElement | null;
-      if (animationSVG) {
-        animationSVG.innerHTML = "";
+    try {
+      if (!(selectSVG1.current && selectSVG2.current)) {
+        return;
       }
+      const svg1 = project.savedSVGs[parseInt(selectSVG1.current.value)];
+      const svg2 = project.savedSVGs[parseInt(selectSVG2.current.value)];
+      console.log(svg1.paths.length);
+      console.log(svg2.paths.length);
+      const clearPreviousAnimations = () => {
+        const animationSVG = document.getElementById(
+          "morph"
+        ) as SVGSVGElement | null;
+        if (animationSVG) {
+          animationSVG.innerHTML = "";
+        }
 
-      const morphStyleSheet = document.getElementById("morphAnimationStyle");
-      if (morphStyleSheet) {
-        morphStyleSheet.innerHTML = "";
+        const morphStyleSheet = document.getElementById("morphAnimationStyle");
+        if (morphStyleSheet) {
+          morphStyleSheet.innerHTML = "";
+        }
+      };
+
+      clearPreviousAnimations();
+
+      const generateSVGAnimations = async (svg1: SavedSVG, svg2: SavedSVG) => {
+        let index = 0;
+        const max = svg1.paths.length;
+        for await (const path of svg1.paths) {
+          //svg1.paths.forEach((path, index) => {
+          console.log("Progress:", index / max);
+          setProgress(index / max);
+          if (svg2.paths[index]) {
+            animatePaths(svg2.paths[index], path, index);
+          } else {
+            animatePaths(
+              svg2.paths[Math.floor(svg2.paths.length * Math.random())],
+              path,
+              index
+            );
+          }
+          index += 1;
+        }
+      };
+
+      if (svg1.paths.length < svg2.paths.length) {
+        generateSVGAnimations(svg2, svg1);
+      } else {
+        generateSVGAnimations(svg1, svg2);
       }
-    };
-
-    clearPreviousAnimations();
-
-    const generateSVGAnimations = (svg1: SavedSVG, svg2: SavedSVG) => {
-      svg1.paths.forEach((path, index) => {
-        if(svg2.paths[index]){
-          animatePaths(svg2.paths[index], path, index);
-        }
-        else{
-          animatePaths(svg2.paths[Math.floor(svg2.paths.length*Math.random())], path, index)
-        }
-      });
-    };
-
-    if (svg1.paths.length < svg2.paths.length) {
-      generateSVGAnimations(svg2, svg1);
-    } else {
-      generateSVGAnimations(svg1, svg2);
+    } catch {
+      console.error("could not create animations");
+    } finally {
+      setLoading(false);
     }
   };
   const handleSelectChange = () => {
-    if (!(selectPath1.current && selectPath2.current)) {
-      return;
+    try {
+      if (!(selectPath1.current && selectPath2.current)) {
+        return;
+      }
+      const path1 = project.savedPaths[parseInt(selectPath1.current.value)];
+      const path2 = project.savedPaths[parseInt(selectPath2.current.value)];
+      animatePaths(path1, path2, 1);
+    } catch {
+      console.error("Could not create animation");
+    } finally {
+      setLoading(false);
     }
-    const path1 = project.savedPaths[parseInt(selectPath1.current.value)];
-    const path2 = project.savedPaths[parseInt(selectPath2.current.value)];
-    animatePaths(path1, path2, 1);
   };
 
-  const animatePaths = (path1: SavedPath, path2: SavedPath, id:number) => {
+  const animatePaths = (path1: SavedPath, path2: SavedPath, id: number) => {
     const getVertexCount = (path: string) => {
       const curveOperations = path.split("c");
       return curveOperations.length - 1;
@@ -93,13 +117,14 @@ const SettingsForm = () => {
     const morphStyleSheet = document.getElementById("morphAnimationStyle");
     if (morphStyleSheet) {
       morphStyleSheet.innerHTML += `@keyframes morphAnim${id} {
-          50%{
+          to{
             d: path('${numberedpath2}' ); 
             fill:${path2.fill}
           }
         }
         #morph${id}{
-          animation: morphAnim${id} 2s ease 1s infinite alternate;
+          animation: morphAnim${id} var(--animation-duration) var(--animation-timing-function) var(--animation-delay) var(--animation-iteration-count) var(--animation-direction);
+          animation-timeline: var(--animation-timeline);
         }
         svg{width:50%;
           z-index:1;
@@ -127,18 +152,54 @@ const SettingsForm = () => {
     animationSVG.appendChild(pathElement);
   };
 
-  const handleInputChange = (
-    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    const newValue = name === "svgInput" ? DOMPurify.sanitize(value) : value;
-    console.log(settings);
-    updateSettings({ [name]: newValue });
+  const handleInputChange = async () => {
+    console.log("Running input change process");
+    setLoading((prev) => {
+      console.log(prev);
+      return prev;
+    });
+
+    if (!svgTextRef.current) {
+      setLoading(false);
+      return;
+    }
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      const value = svgTextRef.current.value;
+      console.log("b4 dompurifuy");
+      const newValue = DOMPurify.sanitize(value);
+      console.log("after dompurify");
+      updateSettings({ svgInput: newValue });
+      console.log("afterupdate");
+    } catch {
+      console.error("Not able to process svg");
+    } finally {
+      console.log("Hello!");
+      setLoading(false);
+    }
   };
 
   return (
     <div className="form-settings">
       <h2>Inputs</h2>
+
+      <div className="mb-3">
+        <label htmlFor="formFile" className="form-label">
+          Default file input example
+        </label>
+        <input className="form-control" type="file" id="formFile" />
+      </div>
+      <div className="form-floating">
+        <textarea
+          className="form-control"
+          placeholder="Leave a comment here"
+          id="svgInput"
+          name="svgInput"
+          onChange={() => console.log("I changed!")}
+          ref={svgTextRef}
+        ></textarea>
+        <label htmlFor="svgInput">SVG Code</label>
+      </div>
       <label htmlFor="pathStepsInput" className="form-label">
         Path Steps for initial processing
       </label>
@@ -167,15 +228,32 @@ const SettingsForm = () => {
         defaultValue={settings.tolerance}
         onChange={handleInputChange}
       ></input>
-      <div className="form-floating">
-        <textarea
-          className="form-control"
-          placeholder="Leave a comment here"
-          id="svgInput"
-          name="svgInput"
-          onChange={handleInputChange}
-        ></textarea>
-        <label htmlFor="svgInput">SVG Code</label>
+      <button
+        className="btn btn-primary"
+        type="button"
+        onClick={() => {
+          setLoading(true);
+          handleInputChange();
+        }}
+        disabled={loading}
+      >
+        {loading ? (
+          <>
+            <span
+              className="spinner-border spinner-border-sm"
+              aria-hidden="true"
+            ></span>
+            <span role="status">Loading...</span>
+          </>
+        ) : (
+          "Process SVG"
+        )}
+      </button>
+      <div className="progress" role="progressbar" aria-label="Basic example">
+        <div
+          className="progress-bar"
+          style={{ width: 100 * progress + "%" }}
+        ></div>
       </div>
       <select
         ref={selectPath1}
@@ -208,7 +286,7 @@ const SettingsForm = () => {
         ref={selectSVG1}
         className="form-select"
         aria-label="SVG 1 Select"
-        onChange={handleSVGSelectChange}
+        onChange={() => console.log("select changed!")}
       >
         <option disabled>Choose a Saved SVG</option>
         {project.savedSVGs.map((svg, index) => (
@@ -221,7 +299,7 @@ const SettingsForm = () => {
         ref={selectSVG2}
         className="form-select"
         aria-label="SVG 2 Select"
-        onChange={handleSVGSelectChange}
+        onChange={() => console.log("select changed!")}
       >
         <option disabled>Choose a Saved SVG</option>
         {project.savedSVGs.map((svg, index) => (
@@ -230,6 +308,27 @@ const SettingsForm = () => {
           </option>
         ))}
       </select>
+      <button
+        className="btn btn-primary"
+        type="button"
+        onClick={() => {
+          setLoading(true);
+          handleSVGSelectChange();
+        }}
+        disabled={loading}
+      >
+        {loading ? (
+          <>
+            <span
+              className="spinner-border spinner-border-sm"
+              aria-hidden="true"
+            ></span>
+            <span role="status">Loading...</span>
+          </>
+        ) : (
+          "Create Animation"
+        )}
+      </button>
     </div>
   );
 };

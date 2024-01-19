@@ -12,52 +12,57 @@ const SVGProcess = () => {
   const modifiedSVGDiv = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (inputSVGDiv.current && modifiedSVGDiv.current) {
-      inputSVGDiv.current.innerHTML = settings.svgInput;
-      const inputSVG = inputSVGDiv.current.querySelector(
-        "svg"
-      ) as SVGSVGElement | null;
-      modifiedSVGDiv.current.innerHTML = "";
-      document.body
-        .querySelectorAll("p")
-        .forEach((element) => element.remove());
-      if (inputSVG) {
-        const modifiedSVG = inputSVG.cloneNode(true) as SVGSVGElement;
-        modifiedSVG.querySelectorAll("path").forEach((path) => path.remove());
-        const inputViewBox = inputSVG.getAttribute("viewBox") as
-          | string
-          | "0 0 50 50";
-        const svgPaths = inputSVG.querySelectorAll("path");
-        const pathsToSave = [] as SavedPath[];
-        svgPaths.forEach((svgPath) => {
-          const points = getSVGPathPoints(svgPath);
-          const simplifiedPath = simplifySvgPath(points, {
-            tolerance: 1,
-            precision: 2,
-          });
+    const processInputSVG = async () => {
+      console.log("starting useEffect");
+      if (inputSVGDiv.current && modifiedSVGDiv.current) {
+        inputSVGDiv.current.innerHTML = settings.svgInput;
+        const inputSVG = inputSVGDiv.current.querySelector(
+          "svg"
+        ) as SVGSVGElement | null;
+        modifiedSVGDiv.current.innerHTML = "";
+        document.body
+          .querySelectorAll("p")
+          .forEach((element) => element.remove());
+        if (inputSVG) {
+          const modifiedSVG = inputSVG.cloneNode(true) as SVGSVGElement;
+          modifiedSVG.querySelectorAll("path").forEach((path) => path.remove());
+          const inputViewBox = inputSVG.getAttribute("viewBox") as
+            | string
+            | "0 0 100 100";
+          const svgPaths = inputSVG.querySelectorAll("path");
+          const pathsToSave = [] as SavedPath[];
+          svgPaths.forEach((svgPath) => {
+            const points = getSVGPathPoints(svgPath);
+            const simplifiedPath = simplifySvgPath(points, {
+              tolerance: 1,
+              precision: 2,
+            });
 
-          //const outputText = document.createElement("p");
-          //outputText.innerHTML = numberedVertexPath;
-          //document.body.appendChild(outputText);
-          const modifiedSVGPath = svgPath.cloneNode(true) as SVGPathElement;
-          modifiedSVGPath.setAttribute("d", simplifiedPath);
-          modifiedSVG.appendChild(modifiedSVGPath);
+            //const outputText = document.createElement("p");
+            //outputText.innerHTML = numberedVertexPath;
+            //document.body.appendChild(outputText);
+            const modifiedSVGPath = svgPath.cloneNode(true) as SVGPathElement;
+            modifiedSVGPath.setAttribute("d", simplifiedPath);
+            modifiedSVG.appendChild(modifiedSVGPath);
 
-          pathsToSave.push({
-            path: simplifiedPath,
-            inputPath: svgPath.getAttribute("d")!,
-            viewBox: inputViewBox,
-            id: "testing",
-            fill: svgPath.getAttribute("fill") || "none",
-            stroke: "red",
+            pathsToSave.push({
+              path: simplifiedPath,
+              inputPath: svgPath.getAttribute("d")!,
+              viewBox: inputViewBox,
+              id: "testing",
+              fill: svgPath.getAttribute("fill") || "none",
+              stroke: "red",
+            });
           });
-        });
-        console.table(project.savedPaths);
-        modifiedSVGDiv.current!.appendChild(modifiedSVG);
-        project.addPaths(pathsToSave);
-        project.addSVG({paths:pathsToSave})
+          console.table(project.savedPaths);
+          modifiedSVGDiv.current!.appendChild(modifiedSVG);
+          project.addPaths(pathsToSave);
+          project.addSVG({ paths: pathsToSave });
+        }
       }
-    }
+    };
+
+    processInputSVG();
   }, [settings]);
 
   function getSVGPathPoints(inputPath: SVGPathElement) {
