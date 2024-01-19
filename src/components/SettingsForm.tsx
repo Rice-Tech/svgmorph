@@ -1,21 +1,23 @@
-import { useContext, useRef, useState } from "react";
+import { ChangeEvent, useContext, useRef, useState } from "react";
 import { SettingsContext } from "./SettingsProvider";
 import DOMPurify from "dompurify";
 import { ProjectContext, SavedPath, SavedSVG } from "./ProjectProvider";
+import AnimationTiming from "./AnimationTiming";
 
 const SettingsForm = () => {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const { settings, updateSettings } = useContext(SettingsContext)!;
   const { project } = useContext(ProjectContext)!;
-  const selectPath1 = useRef<HTMLSelectElement>(null);
-  const selectPath2 = useRef<HTMLSelectElement>(null);
 
   const selectSVG1 = useRef<HTMLSelectElement>(null);
   const selectSVG2 = useRef<HTMLSelectElement>(null);
   const svgTextRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleSVGSelectChange = () => {
+  const createAnimation = async () => {
+    setLoading(true);
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
     try {
       if (!(selectSVG1.current && selectSVG2.current)) {
         return;
@@ -67,20 +69,6 @@ const SettingsForm = () => {
       }
     } catch {
       console.error("could not create animations");
-    } finally {
-      setLoading(false);
-    }
-  };
-  const handleSelectChange = () => {
-    try {
-      if (!(selectPath1.current && selectPath2.current)) {
-        return;
-      }
-      const path1 = project.savedPaths[parseInt(selectPath1.current.value)];
-      const path2 = project.savedPaths[parseInt(selectPath2.current.value)];
-      animatePaths(path1, path2, 1);
-    } catch {
-      console.error("Could not create animation");
     } finally {
       setLoading(false);
     }
@@ -139,25 +127,31 @@ const SettingsForm = () => {
     if (!animationSVG) {
       return;
     }
+    animationSVG.setAttribute("viewBox", path1.viewBox);
+    const addPathToSVG = (
+      pathString: string,
+      pathFill: string,
+      svgElement: SVGElement,
+      id: string
+    ) => {
+      const pathElement = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "path"
+      );
+      pathElement.setAttribute("d", pathString);
+      pathElement.setAttribute("fill", pathFill);
+      pathElement.setAttribute("id", id);
+      svgElement.appendChild(pathElement);
+    };
+
     const newSVG = animationSVG.cloneNode(true) as SVGSVGElement;
     newSVG.setAttribute("id", `morph${id}`);
-    animationSVG.setAttribute("viewBox", path1.viewBox);
-    const pathElement = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "path"
-    );
-    pathElement.setAttribute("d", numberedpath1);
-    pathElement.setAttribute("fill", path1.fill);
-    pathElement.setAttribute("id", `morph${id}`);
-    animationSVG.appendChild(pathElement);
+
+    addPathToSVG(numberedpath1, path1.fill, animationSVG, `morph${id}`);
   };
 
-  const handleInputChange = async () => {
-    console.log("Running input change process");
-    setLoading((prev) => {
-      console.log(prev);
-      return prev;
-    });
+  const handleAddSVG = async () => {
+    console.log("Running input change");
 
     if (!svgTextRef.current) {
       setLoading(false);
@@ -166,17 +160,30 @@ const SettingsForm = () => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 10));
       const value = svgTextRef.current.value;
-      console.log("b4 dompurifuy");
       const newValue = DOMPurify.sanitize(value);
-      console.log("after dompurify");
       updateSettings({ svgInput: newValue });
-      console.log("afterupdate");
     } catch {
       console.error("Not able to process svg");
     } finally {
       console.log("Hello!");
       setLoading(false);
     }
+  };
+
+  const handleFileInput = (event: ChangeEvent) => {
+    const target = event.target as HTMLInputElement;
+    const file = target.files?.[0];
+    if (!file) {
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e: ProgressEvent<FileReader>) => {
+      const fileContent = e.target?.result as string;
+      if (svgTextRef.current && fileContent) {
+        svgTextRef.current.value = fileContent;
+      }
+    };
+    reader.readAsText(file);
   };
 
   return (
@@ -187,7 +194,12 @@ const SettingsForm = () => {
         <label htmlFor="formFile" className="form-label">
           Default file input example
         </label>
-        <input className="form-control" type="file" id="formFile" />
+        <input
+          className="form-control"
+          type="file"
+          id="formFile"
+          onChange={handleFileInput}
+        />
       </div>
       <div className="form-floating">
         <textarea
@@ -212,7 +224,6 @@ const SettingsForm = () => {
         id="pathStepsInput"
         name="pathSteps"
         defaultValue={settings.pathSteps}
-        onChange={handleInputChange}
       ></input>
       <label htmlFor="toleranceInput" className="form-label">
         Resampling Tolerance
@@ -226,14 +237,13 @@ const SettingsForm = () => {
         id="toleranceInput"
         name="tolerance"
         defaultValue={settings.tolerance}
-        onChange={handleInputChange}
       ></input>
       <button
         className="btn btn-primary"
         type="button"
         onClick={() => {
           setLoading(true);
-          handleInputChange();
+          handleAddSVG();
         }}
         disabled={loading}
       >
@@ -255,32 +265,6 @@ const SettingsForm = () => {
           style={{ width: 100 * progress + "%" }}
         ></div>
       </div>
-      <select
-        ref={selectPath1}
-        className="form-select"
-        aria-label="Path"
-        onChange={handleSelectChange}
-      >
-        <option disabled>Choose a Saved Path</option>
-        {project.savedPaths.map((path, index) => (
-          <option key={path.id + index} value={index}>
-            {path.id + index}
-          </option>
-        ))}
-      </select>
-      <select
-        ref={selectPath2}
-        className="form-select"
-        aria-label="Path"
-        onChange={handleSelectChange}
-      >
-        <option disabled>Choose a Saved Path</option>
-        {project.savedPaths.map((path, index) => (
-          <option key={path.id + index} value={index}>
-            {path.id + index}
-          </option>
-        ))}
-      </select>
 
       <select
         ref={selectSVG1}
@@ -311,10 +295,7 @@ const SettingsForm = () => {
       <button
         className="btn btn-primary"
         type="button"
-        onClick={() => {
-          setLoading(true);
-          handleSVGSelectChange();
-        }}
+        onClick={createAnimation}
         disabled={loading}
       >
         {loading ? (
@@ -329,6 +310,7 @@ const SettingsForm = () => {
           "Create Animation"
         )}
       </button>
+      <AnimationTiming svgs={project.savedSVGs} />
     </div>
   );
 };

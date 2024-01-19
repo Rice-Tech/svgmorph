@@ -5,13 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <style>
-      
+      :root {
+        --path1: path("M10 50 Q 50 10, 90 50 T 170 50");
+        --path2: path("M10 50 Q 50 90, 90 50 T 170 50");
+        --path3: path("M10 50 Q 50 90, 90 50 T 170 50");
+        --path4: path("M90 50 Q 50 10, 10 50 T -70 50");
+      }
       @keyframes morphAnimation {
         0% {
-          d: path("M10 50 Q 50 10, 90 50 T 170 50"), path("M90 50 Q 50 90, 10 50 T -70 50");
+          d: var(--path1)
         }
         100% {
-          d: path("M10 50 Q 50 90, 90 50 T 170 50");
+          d: var(--path2)
         }
       }
 
@@ -23,13 +28,13 @@
 
       @keyframes path1anim {
         50% {
-          d: path("M10 50 Q 50 90, 90 50 T 170 50");
+          d: var(--path3);
           fill: red;
         }
       }
       @keyframes path2anim {
         50% {
-          d: path("M90 50 Q 50 10, 10 50 T -70 50");
+          d: var(--path4);
           fill: yellow;
         }
       }

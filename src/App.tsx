@@ -1,7 +1,7 @@
-import SettingsForm from "./assets/components/SettingsForm";
-import SVGProcess from "./assets/components/SVGProcess";
-import { SettingsProvider } from "./assets/components/SettingsProvider";
-import { ProjectProvider } from "./assets/components/ProjectProvider";
+import SettingsForm from "./components/SettingsForm";
+import SVGProcess from "./components/SVGProcess";
+import { SettingsProvider } from "./components/SettingsProvider";
+import { ProjectProvider } from "./components/ProjectProvider";
 
 export const App = () => {
   return (

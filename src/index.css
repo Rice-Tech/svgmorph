@@ -20,13 +20,38 @@ svg{
 
 
 .form-settings{
-  width: 50%;
+  width: 95%;
   margin:5px auto;
   border: 5px solid black;
   border-radius: 15px;
 
   padding: 10px;
+  background-color: lightblue;
 }
 #svgInput{
   height: 200px;
+}
+.svgTablePreview{
+  width: 100px;
+  transition: width 200ms ease-in-out;
+}
+td:hover .svgTablePreview{
+  width: 300px;
+}
+tr td {
+  transition: 100ms ease-in-out;
+}
+.activeRow td{
+  background-color: white;
+}
+.inactiveRow td{
+  background-color: lightgrey;
+}
+td{
+
+  width: 25%;
+}
+table{
+  table-layout: fixed;
+  width: 100%;
 }
