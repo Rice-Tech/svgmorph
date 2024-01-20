@@ -1,4 +1,4 @@
-# SVG Resample and Animator
+# SVG Morph
 
 SVG Morph makes complex morph animations between any two SVG images possible using vanilla CSS. To use CSS animations, paths must have identical transformations. This utility resamples SVGs to a standard format and creates the necessary CSS for up to hundreds of shapes.
 
