@@ -8,7 +8,7 @@ Check out the demo at ([svgmorph.ricecodes.com](https://svgmorph.ricecodes.com/)
 TODO: Currently the selects are the only way to select the two SVGs to animate. I plan to use then nicer table in the future but haven't implemented that yet.
 
 
-##Aknowledgements
+## Aknowledgements
 I used the following projects along the way:
 - [@figmania/svg-toolkit](https://github.com/figmania/svg-toolkit) Handy Figma Plugin to get SVGs
 - [@danmarshall/google-font-to-svg-path](https://github.com/danmarshall/google-font-to-svg-path) Useful for getting Google Fonts as SVG
