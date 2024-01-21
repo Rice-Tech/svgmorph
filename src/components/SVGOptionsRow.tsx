@@ -40,7 +40,6 @@ const SVGOptionsRow = ({ svg }: Props) => {
         {active ? (
           <>
             <div>{percent}%</div>
-            <p>Will this crash?</p>
             <label htmlFor={"percentSlider" + svg.id} className="form-label">
               Animation Timeline %
             </label>
