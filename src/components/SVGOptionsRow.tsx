@@ -1,4 +1,4 @@
-import { ChangeEvent, useState, useContext, useEffect } from "react";
+import { ChangeEvent, useState, useContext } from "react";
 import { ProjectContext, SavedSVG } from "./ProjectProvider";
 
 interface Props {
@@ -40,6 +40,7 @@ const SVGOptionsRow = ({ svg }: Props) => {
         {active ? (
           <>
             <div>{percent}%</div>
+            <p>Will this crash?</p>
             <label htmlFor={"percentSlider" + svg.id} className="form-label">
               Animation Timeline %
             </label>
