@@ -1,17 +1,19 @@
-import { ChangeEvent, useState } from "react";
-import { SavedSVG } from "./ProjectProvider";
+import { ChangeEvent, useState, useContext } from "react";
+import { ProjectContext, SavedSVG } from "./ProjectProvider";
 
 interface Props {
   svg: SavedSVG;
 }
 
 const SVGOptionsRow = ({ svg }: Props) => {
+  const { project } = useContext(ProjectContext)!;
   const [active, setActive] = useState(false);
-  const [percent, setPercent] = useState("0");
+  const [percent, setPercent] = useState(0);
 
   const handleSliderChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
+    const value = Number(event.target.value);
     setPercent(value);
+    project.updateAnimation(svg, [value]);
   };
   return (
     <tr
@@ -28,7 +30,7 @@ const SVGOptionsRow = ({ svg }: Props) => {
         >
           <>
             {svg.paths.map((path) => {
-              return <path d={path.path} fill={path.fill}></path>;
+              return <path key={path.id} d={path.path} fill={path.fill}></path>;
             })}
           </>
         </svg>
@@ -38,13 +40,13 @@ const SVGOptionsRow = ({ svg }: Props) => {
         {active ? (
           <>
             <p>{percent}%</p>
-            <label htmlFor="customRange1" className="form-label">
-              Example range
+            <label htmlFor={"percentSlider" + svg.id} className="form-label">
+              Animation Timeline %
             </label>
             <input
               type="range"
+              id={"percentSlider" + svg.id}
               className="form-range"
-              id="customRange1"
               onChange={handleSliderChange}
             />
             <button

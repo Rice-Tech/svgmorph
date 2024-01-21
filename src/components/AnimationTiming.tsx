@@ -17,7 +17,7 @@ const AnimationTiming = ({ svgs }: Props) => {
       </thead>
       <tbody>
         {svgs.map((svg) => {
-          return <SVGOptionsRow svg={svg} />;
+          return <SVGOptionsRow key={svg.id} svg={svg} />;
         })}
       </tbody>
     </table>

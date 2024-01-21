@@ -5,6 +5,13 @@ import { SettingsContext } from "./SettingsProvider";
 import { ProjectContext } from "./ProjectProvider";
 import { SavedPath } from "./ProjectProvider";
 
+function generateUniqueId(): string {
+  const timestamp: number = new Date().getTime();
+  const random: number = Math.floor(Math.random() * 1000000); // Adjust the range as needed
+  const uniqueId: string = `${timestamp}-${random}`;
+  return uniqueId;
+}
+
 const SVGProcess = () => {
   const { settings } = useContext(SettingsContext)!;
   const { project } = useContext(ProjectContext)!;
@@ -49,7 +56,7 @@ const SVGProcess = () => {
               path: simplifiedPath,
               inputPath: svgPath.getAttribute("d")!,
               viewBox: inputViewBox,
-              id: "testing",
+              id: generateUniqueId(),
               fill: svgPath.getAttribute("fill") || "none",
               stroke: "red",
             });
@@ -57,7 +64,7 @@ const SVGProcess = () => {
           console.table(project.savedPaths);
           modifiedSVGDiv.current!.appendChild(modifiedSVG);
           project.addPaths(pathsToSave);
-          project.addSVG({ paths: pathsToSave });
+          project.addSVG({ paths: pathsToSave, id: generateUniqueId()});
         }
       }
     };

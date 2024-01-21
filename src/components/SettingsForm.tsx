@@ -10,8 +10,6 @@ const SettingsForm = () => {
   const { settings, updateSettings } = useContext(SettingsContext)!;
   const { project } = useContext(ProjectContext)!;
 
-  const selectSVG1 = useRef<HTMLSelectElement>(null);
-  const selectSVG2 = useRef<HTMLSelectElement>(null);
   const svgTextRef = useRef<HTMLTextAreaElement>(null);
 
   const createAnimation = async () => {
@@ -19,13 +17,18 @@ const SettingsForm = () => {
     await new Promise((resolve) => setTimeout(resolve, 10));
 
     try {
-      if (!(selectSVG1.current && selectSVG2.current)) {
+      /* if (project.animation.length < 2) {
+        return;
+      } */
+      const activeSVGs = project.animation
+        .filter((item) => item.animationPoints.length)
+        .map((item) => item.svg);
+      if (activeSVGs.length < 2) {
         return;
       }
-      const svg1 = project.savedSVGs[parseInt(selectSVG1.current.value)];
-      const svg2 = project.savedSVGs[parseInt(selectSVG2.current.value)];
-      console.log(svg1.paths.length);
-      console.log(svg2.paths.length);
+      const svg1 = activeSVGs[0];
+      const svg2 = activeSVGs[1];
+
       const clearPreviousAnimations = () => {
         const animationSVG = document.getElementById(
           "morph"
@@ -266,32 +269,7 @@ const SettingsForm = () => {
         ></div>
       </div>
 
-      <select
-        ref={selectSVG1}
-        className="form-select"
-        aria-label="SVG 1 Select"
-        onChange={() => console.log("select changed!")}
-      >
-        <option disabled>Choose a Saved SVG</option>
-        {project.savedSVGs.map((svg, index) => (
-          <option key={svg.paths[0].id + index} value={index}>
-            {svg.paths[0].id + index}
-          </option>
-        ))}
-      </select>
-      <select
-        ref={selectSVG2}
-        className="form-select"
-        aria-label="SVG 2 Select"
-        onChange={() => console.log("select changed!")}
-      >
-        <option disabled>Choose a Saved SVG</option>
-        {project.savedSVGs.map((svg, index) => (
-          <option key={svg.paths[0].id + index} value={index}>
-            {svg.paths[0].id + index}
-          </option>
-        ))}
-      </select>
+      <AnimationTiming svgs={project.savedSVGs} />
       <button
         className="btn btn-primary"
         type="button"
@@ -310,7 +288,6 @@ const SettingsForm = () => {
           "Create Animation"
         )}
       </button>
-      <AnimationTiming svgs={project.savedSVGs} />
     </div>
   );
 };

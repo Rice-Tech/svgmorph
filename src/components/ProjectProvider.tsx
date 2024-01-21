@@ -11,16 +11,17 @@ interface SavedPath {
 
 export type SavedSVG = {
   paths: SavedPath[];
-  
-}
+  id: string;
+};
 
 interface Project {
   savedPaths: SavedPath[];
   savedSVGs: SavedSVG[];
-  animations: null;
+  animation: {svg:SavedSVG, animationPoints:number[]}[];
   addPaths: (paths: SavedPath[]) => void;
   removePath: (path: SavedPath) => void;
-  addSVG: (svgs: SavedSVG) => void;
+  addSVG: (newSVG: SavedSVG) => void;
+  updateAnimation: (svg: SavedSVG, animationPoints: number[]) => void;
 }
 
 interface ProjectContextProps {
@@ -34,30 +35,43 @@ const ProjectContext = createContext<ProjectContextProps | undefined>(
 interface Props {
   children: ReactNode;
 }
+
 const ProjectProvider = ({ children }: Props) => {
-  const [project, setProject] = useState({
-    savedPaths: [] as SavedPath[],
-    savedSVGs: [] as SavedSVG[],
-    animations: null,
-    addPaths:  (newPaths: SavedPath[]) => {
-      setProject(prevProject => {
+  const [project, setProject] = useState<Project>({
+    savedPaths: [],
+    savedSVGs: [],
+    animation: [],
+    addPaths: (newPaths: SavedPath[]) => {
+      setProject((prevProject) => {
         const allPaths = [...prevProject.savedPaths, ...newPaths];
         console.table(allPaths);
         return { ...prevProject, savedPaths: allPaths };
-      })},
+      });
+    },
     removePath: (itemToRemove: SavedPath) => {
       updateProject({
         savedPaths: project.savedPaths.filter((item) => item !== itemToRemove),
       });
     },
     addSVG: (newSVG: SavedSVG) => {
-      setProject(prevProject => {
+      setProject((prevProject) => {
         const allSVGs = [...prevProject.savedSVGs, newSVG];
         console.table(allSVGs);
         return { ...prevProject, savedSVGs: allSVGs };
-      })},
-  });
+      });
+    },
+    updateAnimation: (svg: SavedSVG, animationPoints: number[]) => {
 
+      setProject((prevProject) => {
+        const updatedAnimation = [
+          ...prevProject.animation.filter((svgAnim) => svgAnim.svg.id != svg.id),
+          {svg, animationPoints},
+        ];
+        console.table(updatedAnimation);
+        return { ...prevProject, animation: updatedAnimation };
+      });
+    },
+  });
 
   const updateProject = (newProject: Partial<Project>) => {
     setProject({ ...project, ...newProject });
@@ -70,4 +84,4 @@ const ProjectProvider = ({ children }: Props) => {
 };
 
 export { ProjectProvider, ProjectContext };
-export type {SavedPath};
+export type { SavedPath };
