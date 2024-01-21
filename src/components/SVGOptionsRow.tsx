@@ -1,4 +1,4 @@
-import { ChangeEvent, useState, useContext } from "react";
+import { ChangeEvent, useState, useContext, useEffect } from "react";
 import { ProjectContext, SavedSVG } from "./ProjectProvider";
 
 interface Props {
@@ -16,9 +16,7 @@ const SVGOptionsRow = ({ svg }: Props) => {
     project.updateAnimation(svg, [Number(value)]);
   };
   return (
-    <tr
-      className={active ? "activeRow" : "inactiveRow"}
-    >
+    <tr className={active ? "activeRow" : "inactiveRow"}>
       <td>
         <svg
           className="svgTablePreview"
@@ -34,11 +32,14 @@ const SVGOptionsRow = ({ svg }: Props) => {
           </>
         </svg>
       </td>
-      <td>{svg.paths.length}<button onClick={() => setActive(!active)}>ToggleActive</button></td>
+      <td>
+        {svg.paths.length}
+        <button onClick={() => setActive(!active)}>ToggleActive</button>
+      </td>
       <td>
         {active ? (
           <>
-            <p>{percent}%</p>
+            <div>{percent}%</div>
             <label htmlFor={"percentSlider" + svg.id} className="form-label">
               Animation Timeline %
             </label>
@@ -47,6 +48,7 @@ const SVGOptionsRow = ({ svg }: Props) => {
               id={"percentSlider" + svg.id}
               className="form-range"
               onChange={handleSliderChange}
+              value={percent}
             />
           </>
         ) : (
