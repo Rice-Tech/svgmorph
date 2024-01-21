@@ -13,11 +13,10 @@ export type SavedSVG = {
   paths: SavedPath[];
   id: string;
 };
+type Animation = { svg: SavedSVG; animationPoints: number[] }[];
 
 interface Project {
   savedPaths: SavedPath[];
-  savedSVGs: SavedSVG[];
-  animation: {svg:SavedSVG, animationPoints:number[]}[];
   addPaths: (paths: SavedPath[]) => void;
   removePath: (path: SavedPath) => void;
   addSVG: (newSVG: SavedSVG) => void;
@@ -26,6 +25,8 @@ interface Project {
 
 interface ProjectContextProps {
   project: Project;
+  savedSVGs: SavedSVG[];
+  animation: Animation;
   updateProject: (newProject: Partial<Project>) => void;
 }
 const ProjectContext = createContext<ProjectContextProps | undefined>(
@@ -37,10 +38,10 @@ interface Props {
 }
 
 const ProjectProvider = ({ children }: Props) => {
+  const [savedSVGs, setSavedSVGs] = useState<SavedSVG[]>([]);
+  const [animation, setAnimation] = useState<Animation>([]);
   const [project, setProject] = useState<Project>({
     savedPaths: [],
-    savedSVGs: [],
-    animation: [],
     addPaths: (newPaths: SavedPath[]) => {
       setProject((prevProject) => {
         const allPaths = [...prevProject.savedPaths, ...newPaths];
@@ -54,21 +55,16 @@ const ProjectProvider = ({ children }: Props) => {
       });
     },
     addSVG: (newSVG: SavedSVG) => {
-      setProject((prevProject) => {
-        const allSVGs = [...prevProject.savedSVGs, newSVG];
-        console.table(allSVGs);
-        return { ...prevProject, savedSVGs: allSVGs };
+      setSavedSVGs((prev) => {
+        return [...prev, newSVG];
       });
     },
     updateAnimation: (svg: SavedSVG, animationPoints: number[]) => {
-
-      setProject((prevProject) => {
-        const updatedAnimation = [
-          ...prevProject.animation.filter((svgAnim) => svgAnim.svg.id != svg.id),
-          {svg, animationPoints},
+      setAnimation((prev) => {
+        return [
+          ...prev.filter((svgAnim) => svgAnim.svg.id != svg.id),
+          { svg, animationPoints },
         ];
-        console.table(updatedAnimation);
-        return { ...prevProject, animation: updatedAnimation };
       });
     },
   });
@@ -77,7 +73,9 @@ const ProjectProvider = ({ children }: Props) => {
     setProject({ ...project, ...newProject });
   };
   return (
-    <ProjectContext.Provider value={{ project, updateProject }}>
+    <ProjectContext.Provider
+      value={{ project, savedSVGs, animation, updateProject }}
+    >
       {children}
     </ProjectContext.Provider>
   );

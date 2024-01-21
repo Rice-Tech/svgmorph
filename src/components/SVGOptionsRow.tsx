@@ -8,16 +8,15 @@ interface Props {
 const SVGOptionsRow = ({ svg }: Props) => {
   const { project } = useContext(ProjectContext)!;
   const [active, setActive] = useState(false);
-  const [percent, setPercent] = useState(0);
+  const [percent, setPercent] = useState("0");
 
   const handleSliderChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = Number(event.target.value);
+    const value = event.target.value;
     setPercent(value);
-    project.updateAnimation(svg, [value]);
+    project.updateAnimation(svg, [Number(value)]);
   };
   return (
     <tr
-      onClick={() => !active && setActive(true)}
       className={active ? "activeRow" : "inactiveRow"}
     >
       <td>
@@ -35,7 +34,7 @@ const SVGOptionsRow = ({ svg }: Props) => {
           </>
         </svg>
       </td>
-      <td>{svg.paths.length}</td>
+      <td>{svg.paths.length}<button onClick={() => setActive(!active)}>ToggleActive</button></td>
       <td>
         {active ? (
           <>
@@ -49,15 +48,6 @@ const SVGOptionsRow = ({ svg }: Props) => {
               className="form-range"
               onChange={handleSliderChange}
             />
-            <button
-              type="button"
-              className="btn-close"
-              aria-label="Remove from animation"
-              onClick={() => {
-                console.log("hello");
-                setActive(false);
-              }}
-            ></button>
           </>
         ) : (
           "Click to Use"

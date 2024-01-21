@@ -8,7 +8,7 @@ const SettingsForm = () => {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const { settings, updateSettings } = useContext(SettingsContext)!;
-  const { project } = useContext(ProjectContext)!;
+  const { savedSVGs, animation } = useContext(ProjectContext)!;
 
   const svgTextRef = useRef<HTMLTextAreaElement>(null);
 
@@ -20,7 +20,7 @@ const SettingsForm = () => {
       /* if (project.animation.length < 2) {
         return;
       } */
-      const activeSVGs = project.animation
+      const activeSVGs = animation
         .filter((item) => item.animationPoints.length)
         .map((item) => item.svg);
       if (activeSVGs.length < 2) {
@@ -269,7 +269,7 @@ const SettingsForm = () => {
         ></div>
       </div>
 
-      <AnimationTiming svgs={project.savedSVGs} />
+      <AnimationTiming svgs={savedSVGs} />
       <button
         className="btn btn-primary"
         type="button"
