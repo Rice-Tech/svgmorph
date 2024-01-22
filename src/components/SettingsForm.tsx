@@ -38,8 +38,6 @@ const SettingsForm = () => {
       if (activeSVGs.length < 2) {
         return;
       }
-      const svg1 = activeSVGs[0].svg;
-      const svg2 = activeSVGs[1].svg;
 
       const clearPreviousAnimations = () => {
         const animationSVG = document.getElementById(
@@ -57,32 +55,43 @@ const SettingsForm = () => {
 
       clearPreviousAnimations();
       setSVGPathCSSVarsString("");
-
-      const generateSVGAnimations = async (svg1: SavedSVG, svg2: SavedSVG) => {
+      activeSVGs;
+      const generateSVGAnimations = async (
+        activeSVGs: {
+          svg: SavedSVG;
+          animationPoints: number[];
+        }[]
+      ) => {
         let index = 0;
-        const max = svg1.paths.length;
-        for await (const path of svg1.paths) {
+        const baseSVG = activeSVGs[0].svg;
+        const max = baseSVG.paths.length;
+        for await (const basePath of baseSVG.paths) {
           //svg1.paths.forEach((path, index) => {
           console.log("Progress:", index / max);
           setProgress(index / max);
-          if (svg2.paths[index]) {
-            animatePaths(svg2.paths[index], path, index);
-          } else {
-            animatePaths(
-              svg2.paths[Math.floor(svg2.paths.length * Math.random())],
-              path,
-              index
-            );
-          }
+          const animationPaths = activeSVGs
+            .filter((item) => item.svg.id != baseSVG.id)
+            .map((item) => {
+              if (item.svg.paths[index]) {
+                return {
+                  path: item.svg.paths[index],
+                  animationPoints: item.animationPoints,
+                };
+              } else {
+                return {
+                  path: item.svg.paths[
+                    Math.floor(item.svg.paths.length * Math.random())
+                  ],
+                  animationPoints: item.animationPoints,
+                };
+              }
+            });
+          animatePaths(basePath, animationPaths, index);
           index += 1;
         }
       };
 
-      if (svg1.paths.length < svg2.paths.length) {
-        generateSVGAnimations(svg2, svg1);
-      } else {
-        generateSVGAnimations(svg1, svg2);
-      }
+      generateSVGAnimations(activeSVGs);
     } catch {
       console.error("could not create animations");
     } finally {
@@ -90,7 +99,11 @@ const SettingsForm = () => {
     }
   };
 
-  const animatePaths = (path1: SavedPath, path2: SavedPath, id: number) => {
+  const animatePaths = (
+    path1: SavedPath,
+    otherPaths: { path: SavedPath; animationPoints: number[] }[],
+    id: number
+  ) => {
     const getVertexCount = (path: string) => {
       const curveOperations = path.split("c");
       return curveOperations.length - 1;
@@ -105,49 +118,68 @@ const SettingsForm = () => {
 
       return numberedVertexPath;
     };
+    const vertexCounts = otherPaths.map((item) =>
+      getVertexCount(item.path.path)
+    );
+    vertexCounts.push(getVertexCount(path1.path));
 
-    const vertexCount1 = getVertexCount(path1.path);
-    const vertexCount2 = getVertexCount(path2.path);
-    let vertexCount: number;
-    if (vertexCount1 > vertexCount2) {
-      vertexCount = vertexCount1;
-    } else {
-      vertexCount = vertexCount2;
-    }
+    const vertexCount = Math.max(...vertexCounts);
+
     const numberedpath1 = createStandardPath(path1.path, vertexCount);
-    const numberedpath2 = createStandardPath(path2.path, vertexCount);
 
+    const numberedpaths = otherPaths.map((item) => {
+      const standardPath = createStandardPath(item.path.path, vertexCount);
+      return {
+        standardPath: standardPath,
+        animationPoints: item.animationPoints,
+        fill: item.path.fill,
+        id: item.path.id,
+      };
+    });
+    const morphStyleSheet = document.getElementById("morphAnimationStyle");
+    if (!morphStyleSheet) {
+      return;
+    }
     setSVGPathCSSVarsString(
       (prev) =>
         prev +
         " " +
         `--path${path1.id + vertexCount}: path("${numberedpath1}");`
     );
-    setSVGPathCSSVarsString(
-      (prev) =>
-        prev +
-        " " +
-        `--path${path2.id + vertexCount}: path("${numberedpath2}");`
-    );
+    numberedpaths.forEach((item) => {
+      setSVGPathCSSVarsString(
+        (prev) =>
+          prev +
+          " " +
+          `--path${item.id + vertexCount}: path("${item.standardPath}");`
+      );
+    });
+    const keyframes = numberedpaths
+      .map(
+        (item) => `
+      ${item.animationPoints
+        .map((keyframe) => String(keyframe) + "%")
+        .join(", ")}{
+        d: var(--path${item.id + vertexCount});
+        fill:${item.fill};
+      }
+    `
+      )
+      .join("");
+    morphStyleSheet.innerHTML += `@keyframes morphAnim${id} {
+      ${0}%{
+        d: var(--path${path1.id + vertexCount}); 
+        fill:${path1.fill};
+      }
+      ${keyframes}
+    }`;
 
+    morphStyleSheet.innerHTML += `#morph${id}{
+      animation: morphAnim${id} var(--animation-duration) var(--animation-timing-function) var(--animation-delay) var(--animation-iteration-count) var(--animation-direction);
+      animation-timeline: var(--animation-timeline);
+    }`;
     // Add 2nd SVG as style animation
-    const morphStyleSheet = document.getElementById("morphAnimationStyle");
-    if (morphStyleSheet) {
-      morphStyleSheet.innerHTML += `@keyframes morphAnim${id} {
-          to{
-            d: var(--path${path2.id + vertexCount}); 
-            fill:${path2.fill}
-          }
-        }
-        #morph${id}{
-          animation: morphAnim${id} var(--animation-duration) var(--animation-timing-function) var(--animation-delay) var(--animation-iteration-count) var(--animation-direction);
-          animation-timeline: var(--animation-timeline);
-        }
-        svg{width:50%;
-          z-index:1;
-        }`;
-      document.head.appendChild(morphStyleSheet);
-    }
+    document.head.appendChild(morphStyleSheet);
 
     // add first svg as svg on page
     const animationSVG = document.getElementById(
