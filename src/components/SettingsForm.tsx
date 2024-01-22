@@ -70,7 +70,6 @@ const SettingsForm = () => {
           console.log("Progress:", index / max);
           setProgress(index / max);
           const animationPaths = activeSVGs
-            .filter((item) => item.svg.id != baseSVG.id)
             .map((item) => {
               if (item.svg.paths[index]) {
                 return {
@@ -140,12 +139,6 @@ const SettingsForm = () => {
     if (!morphStyleSheet) {
       return;
     }
-    setSVGPathCSSVarsString(
-      (prev) =>
-        prev +
-        " " +
-        `--path${path1.id + vertexCount}: path("${numberedpath1}");`
-    );
     numberedpaths.forEach((item) => {
       setSVGPathCSSVarsString(
         (prev) =>
@@ -167,10 +160,6 @@ const SettingsForm = () => {
       )
       .join("");
     morphStyleSheet.innerHTML += `@keyframes morphAnim${id} {
-      ${0}%{
-        d: var(--path${path1.id + vertexCount}); 
-        fill:${path1.fill};
-      }
       ${keyframes}
     }`;
 
