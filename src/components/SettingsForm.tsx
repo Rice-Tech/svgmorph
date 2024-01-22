@@ -65,7 +65,7 @@ const SettingsForm = () => {
         let index = 0;
         let maxSVG = activeSVGs[0].svg;
         activeSVGs.forEach((item) => {
-          item.svg.paths = item.svg.paths.sort((a, b) => a.path.localeCompare(b.path));
+          //item.svg.paths = item.svg.paths.sort((a, b) => a.path.localeCompare(b.path));
           if (item.svg.paths.length > maxSVG.paths.length) {
             maxSVG = item.svg;
           }
