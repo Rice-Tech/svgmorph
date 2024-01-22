@@ -1,4 +1,5 @@
 import { useState, createContext, ReactNode } from "react";
+import { hello, world } from "./demos";
 
 interface SavedPath {
   path: string;
@@ -35,7 +36,7 @@ interface Props {
 }
 
 const ProjectProvider = ({ children }: Props) => {
-  const [savedSVGs, setSavedSVGs] = useState<SavedSVG[]>([]);
+  const [savedSVGs, setSavedSVGs] = useState<SavedSVG[]>([hello,world]);
   const [animation, setAnimation] = useState<Animation>([]);
   const [project, setProject] = useState<Project>({
 
