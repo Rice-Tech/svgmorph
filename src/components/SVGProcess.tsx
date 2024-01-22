@@ -57,13 +57,11 @@ const SVGProcess = () => {
               inputPath: svgPath.getAttribute("d")!,
               viewBox: inputViewBox,
               id: generateUniqueId(),
-              fill: svgPath.getAttribute("fill") || "none",
+              fill: svgPath.getAttribute("fill") || "var(--path-fill)",
               stroke: "red",
             });
           });
-          console.table(project.savedPaths);
           modifiedSVGDiv.current!.appendChild(modifiedSVG);
-          project.addPaths(pathsToSave);
           project.addSVG({ paths: pathsToSave, id: generateUniqueId()});
         }
       }

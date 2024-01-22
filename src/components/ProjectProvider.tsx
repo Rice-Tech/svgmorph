@@ -16,9 +16,6 @@ export type SavedSVG = {
 type Animation = { svg: SavedSVG; animationPoints: number[] }[];
 
 interface Project {
-  savedPaths: SavedPath[];
-  addPaths: (paths: SavedPath[]) => void;
-  removePath: (path: SavedPath) => void;
   addSVG: (newSVG: SavedSVG) => void;
   updateAnimation: (svg: SavedSVG, animationPoints: number[]) => void;
 }
@@ -41,19 +38,7 @@ const ProjectProvider = ({ children }: Props) => {
   const [savedSVGs, setSavedSVGs] = useState<SavedSVG[]>([]);
   const [animation, setAnimation] = useState<Animation>([]);
   const [project, setProject] = useState<Project>({
-    savedPaths: [],
-    addPaths: (newPaths: SavedPath[]) => {
-      setProject((prevProject) => {
-        const allPaths = [...prevProject.savedPaths, ...newPaths];
-        console.table(allPaths);
-        return { ...prevProject, savedPaths: allPaths };
-      });
-    },
-    removePath: (itemToRemove: SavedPath) => {
-      updateProject({
-        savedPaths: project.savedPaths.filter((item) => item !== itemToRemove),
-      });
-    },
+
     addSVG: (newSVG: SavedSVG) => {
       setSavedSVGs((prev) => {
         return [...prev, newSVG];
