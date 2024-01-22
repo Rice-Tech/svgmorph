@@ -8,15 +8,27 @@ interface Props {
 const SVGOptionsRow = ({ svg }: Props) => {
   const { project } = useContext(ProjectContext)!;
   const [active, setActive] = useState(false);
-  const [percent, setPercent] = useState("0");
+  const [percent, setPercent] = useState(0);
 
   const handleSliderChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
+    const value = Number(event.target.value);
     setPercent(value);
-    project.updateAnimation(svg, [Number(value)]);
+    project.updateAnimation(svg, [value]);
+  };
+
+  const handleSetActive = (newActive: boolean) => {
+    setActive(newActive);
+    if (newActive) {
+      project.updateAnimation(svg, [percent]);
+    } else {
+      project.updateAnimation(svg, []);
+    }
   };
   return (
-    <tr className={active ? "activeRow" : "inactiveRow"}>
+    <tr
+      onClick={() => !active && handleSetActive(true)}
+      className={active ? "activeRow" : "inactiveRow"}
+    >
       <td>
         <svg
           className="svgTablePreview"
@@ -32,13 +44,21 @@ const SVGOptionsRow = ({ svg }: Props) => {
           </>
         </svg>
       </td>
-      <td>
-        {svg.paths.length}
-        <button onClick={() => setActive(!active)}>ToggleActive</button>
-      </td>
+      <td>{svg.paths.length}</td>
       <td>
         {active ? (
           <>
+            <div style={{ textAlign: "right", width: "100%" }}>
+              <button
+                type="button"
+                className="btn-close"
+                aria-label="Remove from animation"
+                onClick={() => {
+                  console.log("hello");
+                  handleSetActive(false);
+                }}
+              ></button>
+            </div>
             <div>{percent}%</div>
             <label htmlFor={"percentSlider" + svg.id} className="form-label">
               Animation Timeline %
