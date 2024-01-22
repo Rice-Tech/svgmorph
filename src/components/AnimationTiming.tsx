@@ -12,7 +12,7 @@ const AnimationTiming = ({ svgs }: Props) => {
         <tr>
           <th scope="col">Preview</th>
           <th scope="col">Paths</th>
-          <th scope="col">Handle</th>
+          <th scope="col">Options</th>
         </tr>
       </thead>
       <tbody>

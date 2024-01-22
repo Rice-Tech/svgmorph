@@ -1,4 +1,4 @@
-import { ChangeEvent, useContext, useRef, useState } from "react";
+import { ChangeEvent, useContext, useEffect, useRef, useState } from "react";
 import { SettingsContext } from "./SettingsProvider";
 import DOMPurify from "dompurify";
 import { ProjectContext, SavedPath, SavedSVG } from "./ProjectProvider";
@@ -7,10 +7,22 @@ import AnimationTiming from "./AnimationTiming";
 const SettingsForm = () => {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [svgPathCSSVarsString, setSVGPathCSSVarsString] = useState("");
   const { settings, updateSettings } = useContext(SettingsContext)!;
   const { savedSVGs, animation } = useContext(ProjectContext)!;
 
   const svgTextRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    const pathVarsStyleElement = document.getElementById("svgPathCSSVariables");
+    if (!pathVarsStyleElement) {
+      return;
+    }
+    pathVarsStyleElement.innerHTML = `
+    :root{
+      ${svgPathCSSVarsString}
+    }`;
+  }, [svgPathCSSVarsString]);
 
   const createAnimation = async () => {
     setLoading(true);
@@ -20,14 +32,14 @@ const SettingsForm = () => {
       /* if (project.animation.length < 2) {
         return;
       } */
-      const activeSVGs = animation
-        .filter((item) => item.animationPoints.length)
-        .map((item) => item.svg);
+      const activeSVGs = animation.filter(
+        (item) => item.animationPoints.length
+      );
       if (activeSVGs.length < 2) {
         return;
       }
-      const svg1 = activeSVGs[0];
-      const svg2 = activeSVGs[1];
+      const svg1 = activeSVGs[0].svg;
+      const svg2 = activeSVGs[1].svg;
 
       const clearPreviousAnimations = () => {
         const animationSVG = document.getElementById(
@@ -44,6 +56,7 @@ const SettingsForm = () => {
       };
 
       clearPreviousAnimations();
+      setSVGPathCSSVarsString("");
 
       const generateSVGAnimations = async (svg1: SavedSVG, svg2: SavedSVG) => {
         let index = 0;
@@ -95,7 +108,7 @@ const SettingsForm = () => {
 
     const vertexCount1 = getVertexCount(path1.path);
     const vertexCount2 = getVertexCount(path2.path);
-    let vertexCount;
+    let vertexCount: number;
     if (vertexCount1 > vertexCount2) {
       vertexCount = vertexCount1;
     } else {
@@ -104,12 +117,25 @@ const SettingsForm = () => {
     const numberedpath1 = createStandardPath(path1.path, vertexCount);
     const numberedpath2 = createStandardPath(path2.path, vertexCount);
 
+    setSVGPathCSSVarsString(
+      (prev) =>
+        prev +
+        " " +
+        `--path${path1.id + vertexCount}: path("${numberedpath1}");`
+    );
+    setSVGPathCSSVarsString(
+      (prev) =>
+        prev +
+        " " +
+        `--path${path2.id + vertexCount}: path("${numberedpath2}");`
+    );
+
     // Add 2nd SVG as style animation
     const morphStyleSheet = document.getElementById("morphAnimationStyle");
     if (morphStyleSheet) {
       morphStyleSheet.innerHTML += `@keyframes morphAnim${id} {
           to{
-            d: path('${numberedpath2}' ); 
+            d: var(--path${path2.id + vertexCount}); 
             fill:${path2.fill}
           }
         }
