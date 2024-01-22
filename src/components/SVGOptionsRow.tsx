@@ -93,7 +93,7 @@ const SVGOptionsRow = ({ svg }: Props) => {
               ></button>
             </div>
             {Array.from({ length: numberOfKeyframes }, (value, index) => (
-              <Fragment key={"sliders" + svg.id + index}>
+              <Fragment key={"sliders" + svg.id + index +value}>
                 <div>{percents[index]}%</div>
                 <label
                   htmlFor={"percentSlider" + svg.id + index}
