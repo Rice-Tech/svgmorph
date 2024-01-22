@@ -65,6 +65,7 @@ const SettingsForm = () => {
         let index = 0;
         let maxSVG = activeSVGs[0].svg;
         activeSVGs.forEach((item) => {
+          item.svg.paths = item.svg.paths.sort((a, b) => a.path.localeCompare(b.path));
           if (item.svg.paths.length > maxSVG.paths.length) {
             maxSVG = item.svg;
           }
@@ -77,15 +78,21 @@ const SettingsForm = () => {
           setProgress(index / max);
           const animationPaths = activeSVGs.map((item) => {
             if (item.svg.paths[index]) {
+              console.log(item.svg.paths[index]);
               return {
                 path: item.svg.paths[index],
                 animationPoints: item.animationPoints,
               };
             } else {
-              return {
-                path: item.svg.paths[
+              const tempPath = {
+                ...item.svg.paths[
                   Math.floor(item.svg.paths.length * Math.random())
                 ],
+              };
+              tempPath.fill = "rgba(255,255,255,0)";
+              tempPath.id += "placeholder";
+              return {
+                path: tempPath,
                 animationPoints: item.animationPoints,
               };
             }
