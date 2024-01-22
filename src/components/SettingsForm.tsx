@@ -63,28 +63,33 @@ const SettingsForm = () => {
         }[]
       ) => {
         let index = 0;
-        const baseSVG = activeSVGs[0].svg;
+        let maxSVG = activeSVGs[0].svg;
+        activeSVGs.forEach((item) => {
+          if (item.svg.paths.length > maxSVG.paths.length) {
+            maxSVG = item.svg;
+          }
+        });
+        const baseSVG = maxSVG;
         const max = baseSVG.paths.length;
         for await (const basePath of baseSVG.paths) {
           //svg1.paths.forEach((path, index) => {
           console.log("Progress:", index / max);
           setProgress(index / max);
-          const animationPaths = activeSVGs
-            .map((item) => {
-              if (item.svg.paths[index]) {
-                return {
-                  path: item.svg.paths[index],
-                  animationPoints: item.animationPoints,
-                };
-              } else {
-                return {
-                  path: item.svg.paths[
-                    Math.floor(item.svg.paths.length * Math.random())
-                  ],
-                  animationPoints: item.animationPoints,
-                };
-              }
-            });
+          const animationPaths = activeSVGs.map((item) => {
+            if (item.svg.paths[index]) {
+              return {
+                path: item.svg.paths[index],
+                animationPoints: item.animationPoints,
+              };
+            } else {
+              return {
+                path: item.svg.paths[
+                  Math.floor(item.svg.paths.length * Math.random())
+                ],
+                animationPoints: item.animationPoints,
+              };
+            }
+          });
           animatePaths(basePath, animationPaths, index);
           index += 1;
         }
