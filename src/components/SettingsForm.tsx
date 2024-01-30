@@ -24,7 +24,28 @@ const SettingsForm = () => {
     }`;
   }, [svgPathCSSVarsString]);
 
-  const createAnimation = async () => {
+  const getVertexCount = (path: string) => {
+    const curveOperations = path.split("c");
+    return curveOperations.length - 1;
+  };
+  const createStandardPath = (path: string, targetCount: number) => {
+    const vertexCount = getVertexCount(path);
+    console.log(vertexCount);
+    const numberedVertexPath =
+      path + "c0,0 0,0 0,0".repeat(targetCount - vertexCount);
+    console.log(numberedVertexPath.split("c").length - 1);
+
+    return numberedVertexPath;
+  };
+
+  const getMaxVertexCount = (
+    paths: { path: SavedPath; animationPoints: number[] }[]
+  ) => {
+    const vertexCounts = paths.map((item) => getVertexCount(item.path.path));
+    return Math.max(...vertexCounts);
+  };
+
+  const createAnimationSVG = async () => {
     setLoading(true);
     await new Promise((resolve) => setTimeout(resolve, 10));
 
@@ -97,7 +118,13 @@ const SettingsForm = () => {
               };
             }
           });
-          animatePaths(basePath, animationPaths, index);
+          const option: string = "svg";
+          if (option == "css") {
+            animatePathsCSS(basePath, animationPaths, index);
+          } else {
+            animatePathsSVG(basePath, animationPaths, index);
+          }
+
           index += 1;
         }
       };
@@ -110,31 +137,127 @@ const SettingsForm = () => {
     }
   };
 
-  const animatePaths = (
+  const animatePathsSVG = (
     path1: SavedPath,
     otherPaths: { path: SavedPath; animationPoints: number[] }[],
     id: number
   ) => {
-    const getVertexCount = (path: string) => {
-      const curveOperations = path.split("c");
-      return curveOperations.length - 1;
-    };
-    console.log(path1.fill);
-    const createStandardPath = (path: string, targetCount: number) => {
-      const vertexCount = getVertexCount(path);
-      console.log(vertexCount);
-      const numberedVertexPath =
-        path + "c0,0 0,0 0,0".repeat(targetCount - vertexCount);
-      console.log(numberedVertexPath.split("c").length - 1);
+    const vertexCount = getMaxVertexCount(otherPaths);
 
-      return numberedVertexPath;
+    const numberedpath1 = createStandardPath(path1.path, vertexCount);
+
+    const numberedpaths = otherPaths.map((item) => {
+      const standardPath = createStandardPath(item.path.path, vertexCount);
+      return {
+        standardPath: standardPath,
+        animationPoints: item.animationPoints,
+        fill: item.path.fill,
+        id: item.path.id,
+      };
+    });
+    const generateAnimateElement = (
+      name: string,
+      keyframePoints: { value: string; time: number }[]
+    ) => {
+      let values = "";
+      let keyTimes = "";
+      keyframePoints
+        .sort((a, b) => a.time - b.time)
+        .forEach((point, index) => {
+          if (index) {
+            values += "; ";
+            keyTimes += "; ";
+          }
+          values += point.value;
+          keyTimes += point.time;
+        });
+      const animateElement = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "animate"
+      );
+      animateElement.setAttribute("attributeName", name);
+      animateElement.setAttribute("dur", "4s");
+      animateElement.setAttribute("repeatCount", "indefinite");
+      animateElement.setAttribute("values", values);
+      animateElement.setAttribute("keyTimes", keyTimes);
+      return animateElement;
     };
-    const vertexCounts = otherPaths.map((item) =>
-      getVertexCount(item.path.path)
+
+    const keyframePointsPaths: { value: string; time: number }[] = [];
+    numberedpaths.forEach((numPath) => {
+      numPath.animationPoints.forEach((animPoint) => {
+        keyframePointsPaths.push({
+          value: numPath.standardPath,
+          time: animPoint / 100,
+        });
+      });
+    });
+    const animateElementPaths = generateAnimateElement(
+      "d",
+      keyframePointsPaths
     );
-    vertexCounts.push(getVertexCount(path1.path));
 
-    const vertexCount = Math.max(...vertexCounts);
+    const keyframePointsFill: { value: string; time: number }[] = [];
+    numberedpaths.forEach((numPath) => {
+      numPath.animationPoints.forEach((animPoint) => {
+        console.log(numPath.fill);
+        let fill = numPath.fill;
+        if (fill == "var(--path-fill)") {
+          fill = "rgba(255,255,255,0)";
+        }
+        keyframePointsFill.push({
+          value: fill,
+          time: animPoint / 100,
+        });
+      });
+    });
+
+    const animateElementFill = generateAnimateElement(
+      "fill",
+      keyframePointsFill
+    );
+    // add first svg as svg on page
+    const animationSVG = document.getElementById(
+      "morph"
+    ) as SVGSVGElement | null;
+    if (!animationSVG) {
+      return;
+    }
+    animationSVG.setAttribute("viewBox", path1.viewBox);
+    const addPathToSVG = (
+      pathString: string,
+      pathFill: string,
+      svgElement: SVGElement,
+      id: string
+    ) => {
+      const pathElement = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "path"
+      );
+      pathElement.setAttribute("d", pathString);
+      pathElement.setAttribute("fill", pathFill);
+      pathElement.setAttribute("id", id);
+      pathElement.appendChild(animateElementPaths);
+      pathElement.appendChild(animateElementFill);
+      svgElement.appendChild(pathElement);
+    };
+
+    const newSVG = animationSVG.cloneNode(true) as SVGSVGElement;
+    newSVG.setAttribute("id", `morph${id}`);
+
+    addPathToSVG(numberedpath1, path1.fill, animationSVG, `morph${id}`);
+  };
+
+  // ANimate Paths SVG
+
+  const animatePathsCSS = (
+    path1: SavedPath,
+    otherPaths: { path: SavedPath; animationPoints: number[] }[],
+    id: number
+  ) => {
+    console.log(path1.fill);
+
+    const vertexCount = getMaxVertexCount(otherPaths);
 
     const numberedpath1 = createStandardPath(path1.path, vertexCount);
 
@@ -332,7 +455,7 @@ const SettingsForm = () => {
       <button
         className="btn btn-primary"
         type="button"
-        onClick={createAnimation}
+        onClick={createAnimationSVG}
         disabled={loading}
       >
         {loading ? (
