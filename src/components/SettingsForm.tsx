@@ -354,10 +354,39 @@ const SettingsForm = () => {
       setLoading(false);
     }
   };
-
+  const handleDrop = (event: DragEvent) => {
+    event.preventDefault();
+    if (!event.dataTransfer) {
+      return;
+    }
+    if (event.dataTransfer.items) {
+      // Use DataTransferItemList interface to access the file(s)
+      [...event.dataTransfer.items].forEach((item, i) => {
+        // If dropped items aren't files, reject them
+        if (item.kind === "file") {
+          const file = item.getAsFile();
+          if (!file) {
+            return;
+          }
+          console.log(`… file[${i}].name = ${file.name}`);
+          readFile(file);
+        }
+      });
+    } else {
+      // Use DataTransfer interface to access the file(s)
+      [...event.dataTransfer.files].forEach((file, i) => {
+        console.log(`… file[${i}].name = ${file.name}`);
+        readFile(file);
+      });
+    }
+  };
   const handleFileInput = (event: ChangeEvent) => {
     const target = event.target as HTMLInputElement;
     const file = target.files?.[0];
+
+    readFile(file);
+  };
+  const readFile = (file: File | undefined) => {
     if (!file) {
       return;
     }
@@ -372,104 +401,121 @@ const SettingsForm = () => {
   };
 
   return (
-    <div className="form-settings">
-      <h2>Inputs</h2>
+    <div className="form-settings row justify-content-evenly">
+      <h2>Options</h2>
+      <div className="col col-7">
+        <div className="mb-3">
+          <label htmlFor="formFile" className="form-label">
+            Import an SVG file
+          </label>
+          <input
+            className="form-control"
+            type="file"
+            id="formFile"
+            onChange={handleFileInput}
+          />
+        </div>
+        <div className="form-floating">
+          <div
+            id="drop_zone"
+            onDrop={(event) => handleDrop(event as unknown as DragEvent)}
+          >
+            <p>
+              Drag one or more files to this <i>drop zone</i>.
+            </p>
 
-      <div className="mb-3">
-        <label htmlFor="formFile" className="form-label">
-          Default file input example
+            <textarea
+              className="form-control"
+              placeholder="Import an SVG by selecting it above, writing or pasting the code here, or dropping it in the textbox. When you see the code, press Import SVG."
+              id="svgInput"
+              name="svgInput"
+              onChange={() => console.log("I changed!")}
+              ref={svgTextRef}
+            ></textarea>
+
+            <label htmlFor="svgInput">SVG Code</label>
+          </div>
+        </div>
+      </div>
+      <div className="col col-3">
+        <label htmlFor="pathStepsInput" className="form-label">
+          Path Steps for initial processing
         </label>
         <input
-          className="form-control"
-          type="file"
-          id="formFile"
-          onChange={handleFileInput}
-        />
-      </div>
-      <div className="form-floating">
-        <textarea
-          className="form-control"
-          placeholder="Leave a comment here"
-          id="svgInput"
-          name="svgInput"
-          onChange={() => console.log("I changed!")}
-          ref={svgTextRef}
-        ></textarea>
-        <label htmlFor="svgInput">SVG Code</label>
-      </div>
-      <label htmlFor="pathStepsInput" className="form-label">
-        Path Steps for initial processing
-      </label>
-      <input
-        type="range"
-        className="form-range"
-        min="2"
-        max="1000"
-        step="1"
-        id="pathStepsInput"
-        name="pathSteps"
-        defaultValue={settings.pathSteps}
-      ></input>
-      <label htmlFor="toleranceInput" className="form-label">
-        Resampling Tolerance
-      </label>
-      <input
-        type="range"
-        className="form-range"
-        min=".5"
-        max="10"
-        step=".5"
-        id="toleranceInput"
-        name="tolerance"
-        defaultValue={settings.tolerance}
-      ></input>
-      <button
-        className="btn btn-primary"
-        type="button"
-        onClick={() => {
-          setLoading(true);
-          handleAddSVG();
-        }}
-        disabled={loading}
-      >
-        {loading ? (
-          <>
-            <span
-              className="spinner-border spinner-border-sm"
-              aria-hidden="true"
-            ></span>
-            <span role="status">Loading...</span>
-          </>
-        ) : (
-          "Process SVG"
-        )}
-      </button>
-      <div className="progress" role="progressbar" aria-label="Basic example">
+          type="range"
+          className="form-range"
+          min="2"
+          max="1000"
+          step="1"
+          id="pathStepsInput"
+          name="pathSteps"
+          defaultValue={settings.pathSteps}
+        ></input>
+        <label htmlFor="toleranceInput" className="form-label">
+          Resampling Tolerance
+        </label>
+        <input
+          type="range"
+          className="form-range"
+          min=".5"
+          max="10"
+          step=".5"
+          id="toleranceInput"
+          name="tolerance"
+          defaultValue={settings.tolerance}
+        ></input>
+        <button
+          className="btn btn-primary"
+          type="button"
+          onClick={() => {
+            setLoading(true);
+            handleAddSVG();
+          }}
+          disabled={loading}
+        >
+          {loading ? (
+            <>
+              <span
+                className="spinner-border spinner-border-sm"
+                aria-hidden="true"
+              ></span>
+              <span role="status">Loading...</span>
+            </>
+          ) : (
+            "Process SVG"
+          )}
+        </button>
+        <div className="progress" role="progressbar" aria-label="Basic example">
         <div
           className="progress-bar"
           style={{ width: 100 * progress + "%" }}
         ></div>
       </div>
-
-      <AnimationTiming svgs={savedSVGs} />
-      <button
-        className="btn btn-primary"
-        type="button"
-        onClick={createAnimationSVG}
-        disabled={loading}
-      >
-        {loading ? (
-          <>
-            <span
-              className="spinner-border spinner-border-sm"
-              aria-hidden="true"
-            ></span>
-            <span role="status">Loading...</span>
-          </>
-        ) : (
-          "Create Animation"
-        )}
-      </button>
+      </div>
+      
+      <div className="row">
+        <div className="col col-12">
+          <AnimationTiming svgs={savedSVGs} />
+          <button
+            className="btn btn-primary"
+            type="button"
+            onClick={createAnimationSVG}
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <span
+                  className="spinner-border spinner-border-sm"
+                  aria-hidden="true"
+                ></span>
+                <span role="status">Loading...</span>
+              </>
+            ) : (
+              "Create Animation"
+            )}
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
