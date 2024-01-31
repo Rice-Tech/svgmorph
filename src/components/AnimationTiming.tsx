@@ -1,5 +1,6 @@
 import { SavedSVG } from "./ProjectProvider";
 import SVGOptionsRow from "./SVGOptionsRow";
+import { Table, TableBody, TableHead, TableHeader, TableRow } from "./ui/table";
 
 interface Props {
   svgs: SavedSVG[];
@@ -7,20 +8,20 @@ interface Props {
 
 const AnimationTiming = ({ svgs }: Props) => {
   return (
-    <table className="table">
-      <thead>
-        <tr>
-          <th scope="col">Preview</th>
-          <th scope="col">Paths</th>
-          <th scope="col">Options</th>
-        </tr>
-      </thead>
-      <tbody>
+    <Table className=" table-fixed border-2 rounded-lg">
+      <TableHeader>
+        <TableRow>
+          <TableHead scope="col" className=" w-80">Preview</TableHead>
+          <TableHead scope="col" className=" w-20">Paths</TableHead>
+          <TableHead scope="col">Options</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
         {svgs.map((svg) => {
           return <SVGOptionsRow key={svg.id} svg={svg} />;
         })}
-      </tbody>
-    </table>
+      </TableBody>
+    </Table>
   );
 };
 

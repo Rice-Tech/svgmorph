@@ -8,7 +8,9 @@ export const App = () => {
     <>
       <SettingsProvider>
         <ProjectProvider>
-          <h1 style={{ textAlign: "center" }}>SVG Morph Animator</h1>
+          <main className=" font-mono p-2" >
+          
+          <h1 className=" text-center text-3xl">SVG Morph Animator</h1>
           <SettingsForm />
           <div id="resultDiv">
             <svg
@@ -19,6 +21,7 @@ export const App = () => {
             ></svg>
           </div>
           <SVGProcess />;
+          </main>
         </ProjectProvider>
       </SettingsProvider>
     </>

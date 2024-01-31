@@ -1,5 +1,8 @@
-import { ChangeEvent, useState, useContext, Fragment } from "react";
+import { useState, useContext, Fragment } from "react";
 import { ProjectContext, SavedSVG } from "./ProjectProvider";
+import { Button } from "./ui/button";
+import { Slider } from "./ui/slider";
+import { TableCell, TableRow } from "./ui/table";
 
 interface Props {
   svg: SavedSVG;
@@ -11,9 +14,8 @@ const SVGOptionsRow = ({ svg }: Props) => {
   const [percents, setPercents] = useState([0]);
   const [numberOfKeyframes, setNumberOfKeyframes] = useState(1);
 
-  const handleSliderChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = Number(event.target.value);
-    const name = event.target.name;
+  const handleSliderChange = (name: string, values: number[]) => {
+    const value = values[0];
     const newPercents = percents;
     console.log(newPercents);
     newPercents[Number(name)] = value;
@@ -30,13 +32,13 @@ const SVGOptionsRow = ({ svg }: Props) => {
     }
   };
   return (
-    <tr
+    <TableRow
       onClick={() => !active && handleSetActive(true)}
       className={active ? "activeRow" : "inactiveRow"}
     >
-      <td>
+      <TableCell>
         <svg
-          className="svgTablePreview"
+          className="svgTablePreview w-2/3"
           fill="none"
           stroke="black"
           xmlns="http://www.w3.org/2000/svg"
@@ -48,21 +50,17 @@ const SVGOptionsRow = ({ svg }: Props) => {
             })}
           </>
         </svg>
-      </td>
-      <td>{svg.paths.length}</td>
-      <td>
+      </TableCell>
+      <TableCell>{svg.paths.length}</TableCell>
+      <TableCell>
         {active ? (
           <>
             <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                width: "100%",
-              }}
+              className="flex justify-between w-full"
             >
-              <button
-                type="button"
-                className="btn btn-success"
+              <span>
+              <Button
+                className=" bg-green-500 hover:bg-green-800"
                 onClick={() => {
                   setNumberOfKeyframes(numberOfKeyframes + 1);
                   setPercents([...percents, 100]);
@@ -70,10 +68,9 @@ const SVGOptionsRow = ({ svg }: Props) => {
                 }}
               >
                 +
-              </button>
-              <button
-                type="button"
-                className="btn btn-danger"
+              </Button>
+              <Button
+                className="bg-red-500  hover:bg-red-900"
                 onClick={() => {
                   setNumberOfKeyframes(numberOfKeyframes - 1);
                   setPercents(percents.slice(0, -1));
@@ -81,19 +78,21 @@ const SVGOptionsRow = ({ svg }: Props) => {
                 }}
               >
                 -
-              </button>
-              <button
-                type="button"
-                className="btn-close"
+              </Button>
+              </span>
+              <Button
+                className=" bg-red-500 p-2  w-fit h-fit aspect-square hover:bg-red-900"
                 aria-label="Remove from animation"
                 onClick={() => {
                   console.log("hello");
                   handleSetActive(false);
                 }}
-              ></button>
+              >
+                X
+              </Button>
             </div>
             {Array.from({ length: numberOfKeyframes }, (value, index) => (
-              <Fragment key={"sliders" + svg.id + index +value}>
+              <Fragment key={"sliders" + svg.id + index + value}>
                 <div>{percents[index]}%</div>
                 <label
                   htmlFor={"percentSlider" + svg.id + index}
@@ -101,22 +100,27 @@ const SVGOptionsRow = ({ svg }: Props) => {
                 >
                   Animation Timeline %
                 </label>
-                <input
-                  type="range"
+
+                <Slider
                   id={"percentSlider" + svg.id + index}
                   name={String(index)}
-                  className="form-range"
-                  onChange={handleSliderChange}
-                  value={percents[index]}
-                />
+                  onValueChange={(values) =>
+                    handleSliderChange(String(index), values)
+                  }
+                  value={[percents[index]]}
+                  min={0}
+                  max={100}
+                  step={1}
+                  defaultValue={[percents[index]]}
+                ></Slider>
               </Fragment>
             ))}
           </>
         ) : (
           "Click to Use"
         )}
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   );
 };
 

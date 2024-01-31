@@ -3,6 +3,10 @@ import { SettingsContext } from "./SettingsProvider";
 import DOMPurify from "dompurify";
 import { ProjectContext, SavedPath, SavedSVG } from "./ProjectProvider";
 import AnimationTiming from "./AnimationTiming";
+import { Button } from "./ui/button";
+import { Textarea } from "./ui/textarea";
+import { Slider } from "./ui/slider";
+import { Input } from "./ui/input";
 
 const SettingsForm = () => {
   const [loading, setLoading] = useState(false);
@@ -401,105 +405,72 @@ const SettingsForm = () => {
   };
 
   return (
-    <div className="form-settings row justify-content-evenly">
-      <h2>Options</h2>
-      <div className="col col-7">
-        <div className="mb-3">
+    <div className="flex flex-col bg-primary m-4 rounded-xl px-5 py-2">
+  <h2 className="text-2xl text-center text-secondary">Options</h2>
+  <div className="flex flex-wrap justify-evenly bg-secondary rounded-xl p-4">
+    <div className="w-full md:w-2/3 border-solid border-2 rounded-md p-2">
+      {/* Content */}
           <label htmlFor="formFile" className="form-label">
             Import an SVG file
           </label>
-          <input
-            className="form-control"
+          <Input
+            className=" max-w-sm"
             type="file"
             id="formFile"
             onChange={handleFileInput}
           />
-        </div>
-        <div className="form-floating">
-          <div
-            id="drop_zone"
-            onDrop={(event) => handleDrop(event as unknown as DragEvent)}
-          >
-            <p>
-              Drag one or more files to this <i>drop zone</i>.
-            </p>
 
-            <textarea
-              className="form-control"
-              placeholder="Import an SVG by selecting it above, writing or pasting the code here, or dropping it in the textbox. When you see the code, press Import SVG."
-              id="svgInput"
-              name="svgInput"
-              onChange={() => console.log("I changed!")}
-              ref={svgTextRef}
-            ></textarea>
+          <div className="form-floating">
+            <div
+              id="drop_zone"
+              onDrop={(event) => handleDrop(event as unknown as DragEvent)}
+            >
+              <p>
+                Drag one or more files to this <i>drop zone</i>.
+              </p>
+              <label htmlFor="svgInput" hidden>SVG Code</label>
+              <Textarea
+                placeholder="Import an SVG by selecting it above, writing or pasting the code here, or dropping it in the textbox. When you see the code, press Import SVG."
+                id="svgInput"
+                name="svgInput"
+                onChange={() => console.log("I changed!")}
+                ref={svgTextRef}
+              ></Textarea>
 
-            <label htmlFor="svgInput">SVG Code</label>
+              
+            </div>
           </div>
         </div>
-      </div>
-      <div className="col col-3">
-        <label htmlFor="pathStepsInput" className="form-label">
-          Path Steps for initial processing
-        </label>
-        <input
-          type="range"
-          className="form-range"
-          min="2"
-          max="1000"
-          step="1"
-          id="pathStepsInput"
-          name="pathSteps"
-          defaultValue={settings.pathSteps}
-        ></input>
-        <label htmlFor="toleranceInput" className="form-label">
-          Resampling Tolerance
-        </label>
-        <input
-          type="range"
-          className="form-range"
-          min=".5"
-          max="10"
-          step=".5"
-          id="toleranceInput"
-          name="tolerance"
-          defaultValue={settings.tolerance}
-        ></input>
-        <button
-          className="btn btn-primary"
-          type="button"
-          onClick={() => {
-            setLoading(true);
-            handleAddSVG();
-          }}
-          disabled={loading}
-        >
-          {loading ? (
-            <>
-              <span
-                className="spinner-border spinner-border-sm"
-                aria-hidden="true"
-              ></span>
-              <span role="status">Loading...</span>
-            </>
-          ) : (
-            "Process SVG"
-          )}
-        </button>
-        <div className="progress" role="progressbar" aria-label="Basic example">
-        <div
-          className="progress-bar"
-          style={{ width: 100 * progress + "%" }}
-        ></div>
-      </div>
-      </div>
-      
-      <div className="row">
-        <div className="col col-12">
-          <AnimationTiming svgs={savedSVGs} />
-          <button
-            className="btn btn-primary"
-            type="button"
-            onClick={createAnimationSVG}
+        <div className="flex flex-col justify-start space-y-10 align-top border-solid border-2 rounded-md p-2">
+          <label htmlFor="pathStepsInput" className="form-label">
+            Path Steps for initial processing
+          </label>
+          <Slider
+            min={2}
+            max={1000}
+            step={1}
+            id="pathStepsInput"
+            name="pathSteps"
+            defaultValue={[settings.pathSteps]}
+          ></Slider>
+
+          <label htmlFor="toleranceInput" className="form-label">
+            Resampling Tolerance
+          </label>
+          <Slider
+            min={0.5}
+            max={10}
+            step={0.5}
+            id="toleranceInput"
+            name="tolerance"
+            defaultValue={[settings.tolerance]}
+          ></Slider>
+          <Button
+            className=" max-w-40"
+            onClick={() => {
+              setLoading(true);
+              handleAddSVG();
+            }}
             disabled={loading}
           >
             {loading ? (
@@ -511,9 +482,38 @@ const SettingsForm = () => {
                 <span role="status">Loading...</span>
               </>
             ) : (
+              "Process SVG"
+            )}
+          </Button>
+          <div
+            className="progress"
+            role="progressbar"
+            aria-label="Basic example"
+          >
+            <div
+              className="progress-bar"
+              style={{ width: 100 * progress + "%" }}
+            ></div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-secondary my-5 rounded-lg p-5">
+        <div className="">
+          <AnimationTiming svgs={savedSVGs} />
+          <Button type="button" onClick={createAnimationSVG} disabled={loading}>
+            {loading ? (
+              <>
+                <span
+                  className="spinner-border spinner-border-sm"
+                  aria-hidden="true"
+                ></span>
+                <span role="status">Loading...</span>
+              </>
+            ) : (
               "Create Animation"
             )}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
