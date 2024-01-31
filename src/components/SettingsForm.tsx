@@ -179,11 +179,19 @@ const SettingsForm = () => {
         "http://www.w3.org/2000/svg",
         "animate"
       );
+      const options = {
+        dur: "10s",
+        repeatCount: "indefinite",
+        begin: "0s", //morph.mouseenter
+        fill: "freeze",
+      };
       animateElement.setAttribute("attributeName", name);
-      animateElement.setAttribute("dur", "4s");
-      animateElement.setAttribute("repeatCount", "indefinite");
+      animateElement.setAttribute("dur", options.dur);
+      animateElement.setAttribute("repeatCount", options.repeatCount);
+      animateElement.setAttribute("begin", options.begin);
       animateElement.setAttribute("values", values);
       animateElement.setAttribute("keyTimes", keyTimes);
+      animateElement.setAttribute("fill", options.fill);
       return animateElement;
     };
 
@@ -221,17 +229,18 @@ const SettingsForm = () => {
       keyframePointsFill
     );
     // add first svg as svg on page
-    const animationSVG = document.getElementById(
+    const animationGroupElement = document.getElementById(
       "morph"
-    ) as SVGSVGElement | null;
-    if (!animationSVG) {
+    ) as SVGElement | null;
+    if (!animationGroupElement) {
+      console.log("Not found");
       return;
     }
-    animationSVG.setAttribute("viewBox", path1.viewBox);
+    animationGroupElement.setAttribute("viewBox", path1.viewBox);
     const addPathToSVG = (
       pathString: string,
       pathFill: string,
-      svgElement: SVGElement,
+      parentElement: Element,
       id: string
     ) => {
       const pathElement = document.createElementNS(
@@ -243,13 +252,15 @@ const SettingsForm = () => {
       pathElement.setAttribute("id", id);
       pathElement.appendChild(animateElementPaths);
       pathElement.appendChild(animateElementFill);
-      svgElement.appendChild(pathElement);
+      parentElement.appendChild(pathElement);
     };
 
-    const newSVG = animationSVG.cloneNode(true) as SVGSVGElement;
-    newSVG.setAttribute("id", `morph${id}`);
-
-    addPathToSVG(numberedpath1, path1.fill, animationSVG, `morph${id}`);
+    addPathToSVG(
+      numberedpath1,
+      path1.fill,
+      animationGroupElement,
+      `morph${id}`
+    );
   };
 
   // ANimate Paths SVG
@@ -406,10 +417,10 @@ const SettingsForm = () => {
 
   return (
     <div className="flex flex-col bg-primary m-4 rounded-xl px-5 py-2">
-  <h2 className="text-2xl text-center text-secondary">Options</h2>
-  <div className="flex flex-wrap justify-evenly bg-secondary rounded-xl p-4">
-    <div className="w-full md:w-2/3 border-solid border-2 rounded-md p-2">
-      {/* Content */}
+      <h2 className="text-2xl text-center text-secondary">Options</h2>
+      <div className="flex flex-wrap justify-evenly bg-secondary rounded-xl p-4">
+        <div className="w-full md:w-2/3 border-solid border-2 rounded-md p-2">
+          {/* Content */}
           <label htmlFor="formFile" className="form-label">
             Import an SVG file
           </label>
@@ -428,7 +439,9 @@ const SettingsForm = () => {
               <p>
                 Drag one or more files to this <i>drop zone</i>.
               </p>
-              <label htmlFor="svgInput" hidden>SVG Code</label>
+              <label htmlFor="svgInput" hidden>
+                SVG Code
+              </label>
               <Textarea
                 placeholder="Import an SVG by selecting it above, writing or pasting the code here, or dropping it in the textbox. When you see the code, press Import SVG."
                 id="svgInput"
@@ -436,8 +449,6 @@ const SettingsForm = () => {
                 onChange={() => console.log("I changed!")}
                 ref={svgTextRef}
               ></Textarea>
-
-              
             </div>
           </div>
         </div>
