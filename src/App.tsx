@@ -2,7 +2,6 @@ import SettingsForm from "./components/SettingsForm";
 import SVGProcess from "./components/SVGProcess";
 import { SettingsProvider } from "./components/SettingsProvider";
 import { ProjectProvider } from "./components/ProjectProvider";
-import Credits from "./Credits";
 import { DraggableStory } from "./components/DraggableStory";
 import { useRef } from "react";
 import { Button } from "./components/ui/button";
