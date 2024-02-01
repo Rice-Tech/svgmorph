@@ -47,11 +47,6 @@ export const App = () => {
     <>
       <SettingsProvider>
         <ProjectProvider>
-          {/* <Credits/> */}
-          <DraggableStory
-            style={{ backgroundColor: "transparent", zIndex: "1000" }}
-          />
-          {/* <DNDarea/> */}
           <main className=" font-mono p-2">
             <h1 className=" text-center text-3xl">SVG Morph Animator</h1>
             <SettingsForm />
@@ -72,6 +67,9 @@ export const App = () => {
               Copy Code
             </Button>
             <SVGProcess />
+            <DraggableStory
+              style={{ backgroundColor: "transparent", zIndex: "1000" }}
+            />
           </main>
         </ProjectProvider>
       </SettingsProvider>

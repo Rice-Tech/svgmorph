@@ -13,7 +13,7 @@ export interface Props {
   disabled?: boolean;
   dragging?: boolean;
   handle?: boolean;
-  handleProps?: any;
+  handleProps?: object;
   height?: number;
   index?: number;
   fadeIn?: boolean;
@@ -51,7 +51,7 @@ export const Item = React.memo(
         fadeIn,
         handle,
         handleProps,
-        height,
+
         index,
         listeners,
         onRemove,
