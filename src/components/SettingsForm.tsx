@@ -9,6 +9,7 @@ import { Slider } from "./ui/slider";
 import { Input } from "./ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DraggableStory } from "./DraggableStory";
+import SVGPlayground from "./SVGPlayground";
 
 const SettingsForm = () => {
   const [loading, setLoading] = useState(false);
@@ -553,8 +554,8 @@ const SettingsForm = () => {
           </div>
         </TabsContent>
         <TabsContent value="drag">
-          <div className="flex flex-wrap justify-evenly bg-secondary rounded-xl p-4">
-            <DraggableStory/>
+          <div className="flex flex-wrap justify-evenly bg-secondary rounded-xl p-4 w-full">
+            <SVGPlayground/>
           </div>
         </TabsContent>
         <TabsContent value="empty">

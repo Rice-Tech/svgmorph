@@ -5,7 +5,7 @@ import { ProjectProvider } from "./components/ProjectProvider";
 import { DraggableStory } from "./components/DraggableStory";
 import { useRef, useState } from "react";
 import { Button } from "./components/ui/button";
-import { HexColorPicker } from "react-colorful";
+
 
 export const App = () => {
   const resultDiv = useRef<HTMLDivElement>(null);
@@ -44,14 +44,14 @@ export const App = () => {
         console.error("Failed to copy: ", err);
       });
   };
-  const [color, setColor] = useState("green");
+  
   return (
     <>
       <SettingsProvider>
         <ProjectProvider>
           <main className=" font-mono p-2">
-            <HexColorPicker color={color} onChange={setColor} />
-            <h1 className=" text-center text-3xl" style={{color:color}}>SVG Morph Animator</h1>
+            
+            <h1 className=" text-center text-3xl" >SVG Morph Animator</h1>
             <SettingsForm />
             <div id="resultDiv" ref={resultDiv}>
               <svg
