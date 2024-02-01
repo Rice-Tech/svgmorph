@@ -3,7 +3,7 @@ import SVGProcess from "./components/SVGProcess";
 import { SettingsProvider } from "./components/SettingsProvider";
 import { ProjectProvider } from "./components/ProjectProvider";
 import { DraggableStory } from "./components/DraggableStory";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { Button } from "./components/ui/button";
 
 

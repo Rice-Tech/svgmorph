@@ -8,7 +8,6 @@ import { Textarea } from "./ui/textarea";
 import { Slider } from "./ui/slider";
 import { Input } from "./ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DraggableStory } from "./DraggableStory";
 import SVGPlayground from "./SVGPlayground";
 
 const SettingsForm = () => {
