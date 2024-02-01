@@ -8,6 +8,7 @@ import { Textarea } from "./ui/textarea";
 import { Slider } from "./ui/slider";
 import { Input } from "./ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DraggableStory } from "./DraggableStory";
 
 const SettingsForm = () => {
   const [loading, setLoading] = useState(false);
@@ -432,6 +433,7 @@ const SettingsForm = () => {
           <TabsTrigger value="font">Dan Marshal Google Fonts</TabsTrigger>
           <TabsTrigger value="svgomg">SVG Optimizer</TabsTrigger>
           <TabsTrigger value="spline">Lea Verou Spline Tool</TabsTrigger>
+          <TabsTrigger value="drag">Draggable Area</TabsTrigger>
           <TabsTrigger value="empty">Hide</TabsTrigger>
         </TabsList>
         <TabsContent value="import">
@@ -548,6 +550,11 @@ const SettingsForm = () => {
               className="w-3/4 aspect-video"
               src="https://cubic-bezier.com/"
             ></iframe>
+          </div>
+        </TabsContent>
+        <TabsContent value="drag">
+          <div className="flex flex-wrap justify-evenly bg-secondary rounded-xl p-4">
+            <DraggableStory/>
           </div>
         </TabsContent>
         <TabsContent value="empty">
