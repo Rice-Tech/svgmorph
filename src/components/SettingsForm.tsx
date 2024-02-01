@@ -7,6 +7,7 @@ import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { Slider } from "./ui/slider";
 import { Input } from "./ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const SettingsForm = () => {
   const [loading, setLoading] = useState(false);
@@ -163,14 +164,24 @@ const SettingsForm = () => {
       name: string,
       keyframePoints: { value: string; time: number }[]
     ) => {
+      const options = {
+        dur: "10s",
+        repeatCount: "indefinite",
+        begin: "0s", //morph.mouseenter
+        fill: "freeze",
+        calcMode: "spline",
+        spline: ".50 0 .50  1",
+      };
       let values = "";
       let keyTimes = "";
+      let keySplines = "";
       keyframePoints
         .sort((a, b) => a.time - b.time)
         .forEach((point, index) => {
           if (index) {
             values += "; ";
             keyTimes += "; ";
+            keySplines += options.spline + ";";
           }
           values += point.value;
           keyTimes += point.time;
@@ -179,12 +190,7 @@ const SettingsForm = () => {
         "http://www.w3.org/2000/svg",
         "animate"
       );
-      const options = {
-        dur: "10s",
-        repeatCount: "indefinite",
-        begin: "0s", //morph.mouseenter
-        fill: "freeze",
-      };
+
       animateElement.setAttribute("attributeName", name);
       animateElement.setAttribute("dur", options.dur);
       animateElement.setAttribute("repeatCount", options.repeatCount);
@@ -192,6 +198,8 @@ const SettingsForm = () => {
       animateElement.setAttribute("values", values);
       animateElement.setAttribute("keyTimes", keyTimes);
       animateElement.setAttribute("fill", options.fill);
+      animateElement.setAttribute("calcMode", options.calcMode);
+      animateElement.setAttribute("keySplines", keySplines);
       return animateElement;
     };
 
@@ -418,96 +426,134 @@ const SettingsForm = () => {
   return (
     <div className="flex flex-col bg-primary m-4 rounded-xl px-5 py-2">
       <h2 className="text-2xl text-center text-secondary">Options</h2>
-      <div className="flex flex-wrap justify-evenly bg-secondary rounded-xl p-4">
-        <div className="w-full md:w-2/3 border-solid border-2 rounded-md p-2">
-          {/* Content */}
-          <label htmlFor="formFile" className="form-label">
-            Import an SVG file
-          </label>
-          <Input
-            className=" max-w-sm"
-            type="file"
-            id="formFile"
-            onChange={handleFileInput}
-          />
-
-          <div className="form-floating">
-            <div
-              id="drop_zone"
-              onDrop={(event) => handleDrop(event as unknown as DragEvent)}
-            >
-              <p>
-                Drag one or more files to this <i>drop zone</i>.
-              </p>
-              <label htmlFor="svgInput" hidden>
-                SVG Code
+      <Tabs defaultValue="account" className="w-full">
+        <TabsList>
+          <TabsTrigger value="import">Import SVGs</TabsTrigger>
+          <TabsTrigger value="font">Dan Marshal Google Fonts</TabsTrigger>
+          <TabsTrigger value="svgomg">SVG Optimizer</TabsTrigger>
+          <TabsTrigger value="spline">Lea Verou Spline Tool</TabsTrigger>
+          <TabsTrigger value="empty">Hide</TabsTrigger>
+        </TabsList>
+        <TabsContent value="import">
+          <div className="flex flex-wrap justify-evenly bg-secondary rounded-xl p-4">
+            <div className="w-full md:w-2/3 border-solid border-2 rounded-md p-2">
+              {/* Content */}
+              <label htmlFor="formFile" className="form-label">
+                Import an SVG file
               </label>
-              <Textarea
-                placeholder="Import an SVG by selecting it above, writing or pasting the code here, or dropping it in the textbox. When you see the code, press Import SVG."
-                id="svgInput"
-                name="svgInput"
-                onChange={() => console.log("I changed!")}
-                ref={svgTextRef}
-              ></Textarea>
+              <Input
+                className=" max-w-sm"
+                type="file"
+                id="formFile"
+                onChange={handleFileInput}
+              />
+
+              <div className="form-floating">
+                <div
+                  id="drop_zone"
+                  onDrop={(event) => handleDrop(event as unknown as DragEvent)}
+                >
+                  <p>
+                    Drag one or more files to this <i>drop zone</i>.
+                  </p>
+                  <label htmlFor="svgInput" hidden>
+                    SVG Code
+                  </label>
+                  <Textarea
+                    placeholder="Import an SVG by selecting it above, writing or pasting the code here, or dropping it in the textbox. When you see the code, press Import SVG."
+                    id="svgInput"
+                    name="svgInput"
+                    onChange={() => console.log("I changed!")}
+                    ref={svgTextRef}
+                  ></Textarea>
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-col justify-start space-y-10 align-top border-solid border-2 rounded-md p-2">
+              <label htmlFor="pathStepsInput" className="form-label">
+                Path Steps for initial processing
+              </label>
+              <Slider
+                min={2}
+                max={1000}
+                step={1}
+                id="pathStepsInput"
+                name="pathSteps"
+                defaultValue={[settings.pathSteps]}
+              ></Slider>
+
+              <label htmlFor="toleranceInput" className="form-label">
+                Resampling Tolerance
+              </label>
+              <Slider
+                min={0.5}
+                max={10}
+                step={0.5}
+                id="toleranceInput"
+                name="tolerance"
+                defaultValue={[settings.tolerance]}
+              ></Slider>
+              <Button
+                className=" max-w-40"
+                onClick={() => {
+                  setLoading(true);
+                  handleAddSVG();
+                }}
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <span
+                      className="spinner-border spinner-border-sm"
+                      aria-hidden="true"
+                    ></span>
+                    <span role="status">Loading...</span>
+                  </>
+                ) : (
+                  "Process SVG"
+                )}
+              </Button>
+              <div
+                className="progress"
+                role="progressbar"
+                aria-label="Basic example"
+              >
+                <div
+                  className="progress-bar"
+                  style={{ width: 100 * progress + "%" }}
+                ></div>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="flex flex-col justify-start space-y-10 align-top border-solid border-2 rounded-md p-2">
-          <label htmlFor="pathStepsInput" className="form-label">
-            Path Steps for initial processing
-          </label>
-          <Slider
-            min={2}
-            max={1000}
-            step={1}
-            id="pathStepsInput"
-            name="pathSteps"
-            defaultValue={[settings.pathSteps]}
-          ></Slider>
-
-          <label htmlFor="toleranceInput" className="form-label">
-            Resampling Tolerance
-          </label>
-          <Slider
-            min={0.5}
-            max={10}
-            step={0.5}
-            id="toleranceInput"
-            name="tolerance"
-            defaultValue={[settings.tolerance]}
-          ></Slider>
-          <Button
-            className=" max-w-40"
-            onClick={() => {
-              setLoading(true);
-              handleAddSVG();
-            }}
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <span
-                  className="spinner-border spinner-border-sm"
-                  aria-hidden="true"
-                ></span>
-                <span role="status">Loading...</span>
-              </>
-            ) : (
-              "Process SVG"
-            )}
-          </Button>
-          <div
-            className="progress"
-            role="progressbar"
-            aria-label="Basic example"
-          >
-            <div
-              className="progress-bar"
-              style={{ width: 100 * progress + "%" }}
-            ></div>
+        </TabsContent>
+        <TabsContent value="font">
+          <div className="flex flex-wrap justify-evenly bg-secondary rounded-xl p-4">
+            <iframe
+              className="w-full aspect-video"
+              src="https://danmarshall.github.io/google-font-to-svg-path/"
+            ></iframe>
           </div>
-        </div>
-      </div>
+        </TabsContent>
+        <TabsContent value="svgomg">
+          <div className="flex flex-wrap justify-evenly bg-secondary rounded-xl p-4">
+            <iframe
+              className="w-full aspect-video"
+              src="https://svgomg.net/"
+            ></iframe>
+          </div>
+        </TabsContent>
+        <TabsContent value="spline">
+          <div className="flex flex-wrap justify-evenly bg-secondary rounded-xl p-4">
+            <iframe
+              className="w-3/4 aspect-video"
+              src="https://cubic-bezier.com/"
+            ></iframe>
+          </div>
+        </TabsContent>
+        <TabsContent value="empty">
+          <div className="flex flex-wrap justify-evenly bg-secondary rounded-xl p-4"></div>
+        </TabsContent>
+      </Tabs>
 
       <div className="bg-secondary my-5 rounded-lg p-5">
         <div className="">

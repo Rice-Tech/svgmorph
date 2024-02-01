@@ -21,4 +21,14 @@ svg{
   height: 200px;
 }
 
+.animateGradient{
+  background-color: rgb(125, 0, 0);
+  animation: pulseColor 5000ms alternate  ease-in-out infinite;
+}
 
+@keyframes pulseColor {
+  50%{
+    background-color: rgb(103, 56, 56);
+  }
+  
+}

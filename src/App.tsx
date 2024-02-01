@@ -2,15 +2,22 @@ import SettingsForm from "./components/SettingsForm";
 import SVGProcess from "./components/SVGProcess";
 import { SettingsProvider } from "./components/SettingsProvider";
 import { ProjectProvider } from "./components/ProjectProvider";
+import Credits from "./Credits";
+import { DraggableStory } from "./components/DraggableStory";
+
+
 
 export const App = () => {
   return (
     <>
       <SettingsProvider>
         <ProjectProvider>
+          {/* <Credits/> */}
+          <DraggableStory style={{backgroundColor:"transparent", zIndex:"1000"}}/>
+          {/* <DNDarea/> */}
           <main className=" font-mono p-2">
             <h1 className=" text-center text-3xl">SVG Morph Animator</h1>
-            <SettingsForm />
+            <SettingsForm/>
             <div id="resultDiv">
               <svg
                 id="morph"
@@ -21,6 +28,7 @@ export const App = () => {
                 <g id="morphGroup"></g>
               </svg>
             </div>
+            
             <SVGProcess />;
           </main>
         </ProjectProvider>
