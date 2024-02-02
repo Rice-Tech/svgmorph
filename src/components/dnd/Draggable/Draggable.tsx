@@ -36,6 +36,7 @@ export const Draggable = forwardRef<HTMLButtonElement, Props>(
     },
     ref
   ) {
+    console.log(label)
     return (
       <div
         className={classNames(
