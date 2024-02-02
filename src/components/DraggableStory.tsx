@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   DndContext,
   useDraggable,
@@ -11,7 +11,6 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { restrictToWindowEdges } from "@dnd-kit/modifiers";
-import type { Coordinates } from "@dnd-kit/utilities";
 
 import { Draggable, OverflowWrapper, Wrapper } from "./dnd";
 
@@ -22,9 +21,18 @@ export default {
 const defaultCoordinates = {
   x: 0,
   y: 0,
+  id: "",
+  width: 200,
+};
+type Coordinates = {
+  x: number;
+  y: number;
+  id: string;
+  width: number;
 };
 
 interface Props {
+  urls?: string[];
   activationConstraint?: PointerActivationConstraint;
   handle?: boolean;
   modifiers?: Modifiers;
@@ -34,6 +42,7 @@ interface Props {
 }
 
 export function DraggableStory({
+  urls = [],
   activationConstraint,
   handle,
   label = "",
@@ -41,8 +50,7 @@ export function DraggableStory({
   style,
   buttonStyle,
 }: Props) {
-  const [{ x, y }, setCoordinates] = useState<Coordinates>(defaultCoordinates);
-  const svg = document.getElementById("morph")?.outerHTML;
+  const [coords, setCoords] = useState<Coordinates[]>([]);
   const mouseSensor = useSensor(MouseSensor, {
     activationConstraint,
   });
@@ -55,27 +63,67 @@ export function DraggableStory({
   return (
     <DndContext
       sensors={sensors}
-      onDragEnd={({ delta }) => {
-        setCoordinates(({ x, y }) => {
-          return {
-            x: x + delta.x,
-            y: y + delta.y,
-          };
-        });
+      onDragEnd={(event) => {
+        const currCoords =
+          coords.filter((item) => item.id === event.active.id)[0] ||
+          defaultCoordinates;
+        const newCoords = {
+          x: currCoords.x + event.delta.x,
+          y: currCoords.y + event.delta.y,
+          id: event.active.id.toString(),
+          width: currCoords.width,
+        };
+
+        setCoords((prev) => [
+          ...prev.filter((item) => item.id !== event.active.id),
+          newCoords,
+        ]);
       }}
       modifiers={modifiers}
     >
       <Wrapper>
-        <DraggableItem
-          label={label}
-          handle={handle}
-          top={y}
-          left={x}
-          style={style}
-          buttonStyle={buttonStyle}
-        >
-          <div dangerouslySetInnerHTML={{ __html: svg || "" }} />
-        </DraggableItem>
+        {urls.map((url, index) => (
+          <DraggableItem
+            label={label + index}
+            handle={handle}
+            top={
+              coords.filter((item) => item.id === "draggable" + index)[0]?.y ||
+              0
+            }
+            left={
+              coords.filter((item) => item.id === "draggable" + index)[0]?.x ||
+              0
+            }
+            style={style}
+            buttonStyle={buttonStyle}
+            onScroll={(delta) => {
+              const currCoords =
+                coords.filter((item) => item.id === "draggable" + index)[0] ||
+                defaultCoordinates;
+              const newCoords = {
+                x: currCoords.x,
+                y: currCoords.y,
+                id: "draggable" + index,
+                width: currCoords.width + delta,
+              };
+              console.log(newCoords);
+              setCoords((prev) => [
+                ...prev.filter((item) => item.id !== "draggable" + index),
+                newCoords,
+              ]);
+            }}
+          >
+            <img
+              src={url}
+              style={{
+                width:
+                  coords.filter((item) => item.id === "draggable" + index)[0]
+                    ?.width + "px" || "100px",
+              }}
+            ></img>
+            {/* <div dangerouslySetInnerHTML={{ __html: svg || "" }} /> */}
+          </DraggableItem>
+        ))}
       </Wrapper>
     </DndContext>
   );
@@ -89,6 +137,7 @@ interface DraggableItemProps {
   top?: number;
   left?: number;
   children?: React.ReactElement;
+  onScroll: (delta: number) => void;
 }
 
 function DraggableItem({
@@ -99,26 +148,48 @@ function DraggableItem({
   handle,
   buttonStyle,
   children,
+  onScroll,
 }: DraggableItemProps) {
   const { attributes, isDragging, listeners, setNodeRef, transform } =
     useDraggable({
-      id: "draggable",
+      id: "draggable" + label,
     });
+  const [isHovering, setIsHovering] = useState(false);
+
+  useEffect(() => {
+    function handleWheel(event: WheelEvent) {
+      if (isHovering) {
+        //setScrollOffset((prev) => prev + event.deltaY);
+        event.preventDefault();
+        onScroll(event.deltaY);
+      }
+    }
+    window.addEventListener("wheel", handleWheel);
+
+    return () => {
+      window.removeEventListener("wheel", handleWheel);
+    };
+  }, [isHovering, onScroll]);
 
   return (
-    <Draggable
-      ref={setNodeRef}
-      dragging={isDragging}
-      handle={handle}
-      label={label}
-      listeners={listeners}
-      style={{ ...style, top, left }}
-      buttonStyle={buttonStyle}
-      transform={transform}
-      {...attributes}
+    <div
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
     >
-      {children}
-    </Draggable>
+      <Draggable
+        ref={setNodeRef}
+        dragging={isDragging}
+        handle={handle}
+        label={label}
+        listeners={listeners}
+        style={{ ...style, top, left }}
+        buttonStyle={buttonStyle}
+        transform={transform}
+        {...attributes}
+      >
+        {children}
+      </Draggable>
+    </div>
   );
 }
 
