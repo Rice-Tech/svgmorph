@@ -7,7 +7,7 @@ import { processDropFile, processFileInput } from "@/lib/manageFiles";
 import { Input } from "./ui/input";
 import { ChangeEvent } from "react";
 const SVGPlayground = () => {
-  const [color, setColor] = useState("rgba(100,100,100,.5)");
+  const [color, setColor] = useState("white");
   const divRef = useRef<HTMLDivElement>(null);
   const [urls, setURLs] = useState<string[]>([]);
 
@@ -53,7 +53,7 @@ const SVGPlayground = () => {
           <Input type="file" onChange={handleFileInput} />
         </div>
         <div
-          className="w-full h-5/6 rounded-lg"
+          className="w-full h-full rounded-lg"
           style={{ backgroundColor: color }}
           onDrop={(event) => handleDrop(event as unknown as DragEvent)}
         >
