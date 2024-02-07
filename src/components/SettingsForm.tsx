@@ -401,7 +401,7 @@ const SettingsForm = () => {
           <TabsTrigger value="import">Import SVGs</TabsTrigger>
           <TabsTrigger value="font">Dan Marshal Google Fonts</TabsTrigger>
           <TabsTrigger value="svgomg">SVG Optimizer</TabsTrigger>
-          <TabsTrigger value="spline">Lea Verou Spline Tool</TabsTrigger>
+          {/* <TabsTrigger value="spline">Lea Verou Spline Tool</TabsTrigger> */}
           <TabsTrigger value="drag">Draggable Area</TabsTrigger>
           <TabsTrigger value="empty">Hide</TabsTrigger>
         </TabsList>
@@ -513,16 +513,19 @@ const SettingsForm = () => {
             ></iframe>
           </div>
         </TabsContent>
-        <TabsContent value="spline">
+        {/* <TabsContent value="spline">
           <div className="flex flex-wrap justify-evenly bg-secondary rounded-xl p-4">
             <iframe
               className="w-3/4 aspect-video"
               src="https://cubic-bezier.com/"
             ></iframe>
           </div>
-        </TabsContent>
+        </TabsContent> */}
         <TabsContent value="drag">
-          <div className="flex flex-wrap justify-evenly bg-secondary rounded-xl p-4 w-full relative" style={{height:"500px"}}>
+          <div
+            className="flex flex-wrap justify-evenly bg-secondary rounded-xl p-4 w-full relative"
+            style={{ height: "500px" }}
+          >
             <SVGPlayground />
           </div>
         </TabsContent>
