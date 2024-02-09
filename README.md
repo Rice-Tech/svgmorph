@@ -2,6 +2,8 @@
 
 SVG Morph makes complex morph animations between any two SVG images possible using SVG SMIL animations. Morph animations, require matching paths with identical number and type of transformations. This utility resamples SVGs to a standard format and creates the SVG SMIL animations. The repo includes legacy code that utilitzed CSS animations, but animating the d element of an SVG is not supported by WebKit. I plan to offer that as an option as well as provide a GUI interface to many of the other animation options which are currently hardcoded as an options constant.
 
+![The Mona Lisa painting morphs into Fra Angelico's Annunciation](/public/DemoMonaLisaAnnunciation.svg)
+
 ## Quick Start
 Check out the demo at [svgmorph.ricecodes.com](https://svgmorph.ricecodes.com/)
 
