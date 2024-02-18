@@ -419,14 +419,13 @@ const SettingsForm = () => {
   return (
     <div className="flex flex-col bg-primary m-4 rounded-xl px-5 py-2">
       <h2 className="text-2xl text-center text-secondary">Options</h2>
+
       <Tabs defaultValue="import" className="w-full">
         <TabsList>
           <TabsTrigger value="import">Import SVGs</TabsTrigger>
-          <TabsTrigger value="font">Dan Marshal Google Fonts</TabsTrigger>
           <TabsTrigger value="svgomg">SVG Optimizer</TabsTrigger>
           {/* <TabsTrigger value="spline">Lea Verou Spline Tool</TabsTrigger> */}
           <TabsTrigger value="drag">Draggable Area</TabsTrigger>
-          <TabsTrigger value="empty">Hide</TabsTrigger>
         </TabsList>
         <TabsContent value="import">
           <div className="flex flex-wrap justify-evenly bg-secondary rounded-xl p-4">
