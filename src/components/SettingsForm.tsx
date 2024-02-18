@@ -15,7 +15,7 @@ const SettingsForm = () => {
   const [progress, setProgress] = useState(0);
   const [svgPathCSSVarsString, setSVGPathCSSVarsString] = useState("");
   const { settings, updateSettings } = useContext(SettingsContext)!;
-  const { savedSVGs, animation } = useContext(ProjectContext)!;
+  const { savedSVGs, animation, project } = useContext(ProjectContext)!;
 
   const svgTextRef = useRef<HTMLTextAreaElement>(null);
 
@@ -91,12 +91,35 @@ const SettingsForm = () => {
       ) => {
         let index = 0;
         let maxSVG = activeSVGs[0].svg;
-        activeSVGs.forEach((item) => {
-          //item.svg.paths = item.svg.paths.sort((a, b) => a.path.localeCompare(b.path));
+        let firstSVG = 0;
+        let lastSVG = 0;
+        let firstTime = activeSVGs[0].animationPoints[0];
+        project.updateAnimation
+        let lastTime = activeSVGs[0].animationPoints[0];
+        activeSVGs.forEach((item, index) => {
           if (item.svg.paths.length > maxSVG.paths.length) {
             maxSVG = item.svg;
           }
+          item.animationPoints.forEach((point) => {
+            if (point < firstTime) {
+              console.log("First: ",point)
+              firstTime = point;
+              firstSVG = index;
+            }
+            if (point > lastTime) {
+              console.log("Last: ",point)
+              lastTime = point;
+              lastSVG = index;
+            }
+          });
         });
+        if (lastTime < 100) {
+          activeSVGs[lastSVG].animationPoints.push(100);
+        }
+        if (firstTime > 0) {
+          activeSVGs[firstSVG].animationPoints.unshift(0);
+        }
+
         const baseSVG = maxSVG;
         const max = baseSVG.paths.length;
         for await (const basePath of baseSVG.paths) {
@@ -554,7 +577,7 @@ const SettingsForm = () => {
         </TabsContent>
         <TabsContent value="drag">
           <div className="flex flex-wrap justify-evenly bg-secondary rounded-xl p-4 w-full">
-            <SVGPlayground/>
+            <SVGPlayground />
           </div>
         </TabsContent>
         <TabsContent value="empty">

@@ -9,10 +9,9 @@ interface Props {
 }
 
 const SVGOptionsRow = ({ svg }: Props) => {
-  const { project } = useContext(ProjectContext)!;
+  const { project, animation } = useContext(ProjectContext)!;
   const [active, setActive] = useState(false);
   const [percents, setPercents] = useState([0]);
-  const [numberOfKeyframes, setNumberOfKeyframes] = useState(1);
 
   const handleSliderChange = (name: string, values: number[]) => {
     const value = values[0];
@@ -62,7 +61,6 @@ const SVGOptionsRow = ({ svg }: Props) => {
               <Button
                 className=" bg-green-500 hover:bg-green-800"
                 onClick={() => {
-                  setNumberOfKeyframes(numberOfKeyframes + 1);
                   setPercents([...percents, 100]);
                   project.updateAnimation(svg, [...percents, 100]);
                 }}
@@ -72,7 +70,6 @@ const SVGOptionsRow = ({ svg }: Props) => {
               <Button
                 className="bg-red-500  hover:bg-red-900"
                 onClick={() => {
-                  setNumberOfKeyframes(numberOfKeyframes - 1);
                   setPercents(percents.slice(0, -1));
                   project.updateAnimation(svg, percents.slice(0, -1));
                 }}
@@ -91,7 +88,7 @@ const SVGOptionsRow = ({ svg }: Props) => {
                 X
               </Button>
             </div>
-            {Array.from({ length: numberOfKeyframes }, (value, index) => (
+            {Array.from({ length: animation.filter(item => item.svg.id == svg.id)[0].animationPoints.length }, (value, index) => (
               <Fragment key={"sliders" + svg.id + index + value}>
                 <div>{percents[index]}%</div>
                 <label
