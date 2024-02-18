@@ -6,7 +6,6 @@ import { DraggableStory } from "./components/DraggableStory";
 import { useRef } from "react";
 import { Button } from "./components/ui/button";
 
-
 export const App = () => {
   const resultDiv = useRef<HTMLDivElement>(null);
 
@@ -44,14 +43,13 @@ export const App = () => {
         console.error("Failed to copy: ", err);
       });
   };
-  
+
   return (
     <>
       <SettingsProvider>
         <ProjectProvider>
           <main className=" font-mono p-2">
-            
-            <h1 className=" text-center text-3xl" >SVG Morph Animator</h1>
+            <h1 className=" text-center text-3xl">SVG Morph Animator</h1>
             <SettingsForm />
             <div id="resultDiv" ref={resultDiv}>
               <svg
@@ -63,12 +61,14 @@ export const App = () => {
                 <g id="morphGroup"></g>
               </svg>
             </div>
-            <Button id="downloadBtn" onClick={handleDownload}>
-              Download
-            </Button>
-            <Button id="copyBtn" onClick={handleCopyCode}>
-              Copy Code
-            </Button>
+            <div className=" flex gap-4">
+              <Button id="downloadBtn" onClick={handleDownload}>
+                Download
+              </Button>
+              <Button id="copyBtn" onClick={handleCopyCode}>
+                Copy Code
+              </Button>
+            </div>
             <SVGProcess />
             <DraggableStory
               style={{ backgroundColor: "transparent", zIndex: "1000" }}

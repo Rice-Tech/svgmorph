@@ -9,6 +9,7 @@ import { Slider } from "./ui/slider";
 import { Input } from "./ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SVGPlayground from "./SVGPlayground";
+import { processDropFile, processFileInput } from "@/lib/manageFiles";
 
 const SettingsForm = () => {
   const [loading, setLoading] = useState(false);
@@ -401,50 +402,18 @@ const SettingsForm = () => {
       setLoading(false);
     }
   };
-  const handleDrop = (event: DragEvent) => {
+  const handleDrop = async (event: DragEvent) => {
     event.preventDefault();
-    if (!event.dataTransfer) {
-      return;
-    }
-    if (event.dataTransfer.items) {
-      // Use DataTransferItemList interface to access the file(s)
-      [...event.dataTransfer.items].forEach((item, i) => {
-        // If dropped items aren't files, reject them
-        if (item.kind === "file") {
-          const file = item.getAsFile();
-          if (!file) {
-            return;
-          }
-          console.log(`… file[${i}].name = ${file.name}`);
-          readFile(file);
-        }
-      });
-    } else {
-      // Use DataTransfer interface to access the file(s)
-      [...event.dataTransfer.files].forEach((file, i) => {
-        console.log(`… file[${i}].name = ${file.name}`);
-        readFile(file);
-      });
+    const fileContent = await processDropFile(event);
+    if (svgTextRef.current && fileContent) {
+      svgTextRef.current.value = fileContent;
     }
   };
-  const handleFileInput = (event: ChangeEvent) => {
-    const target = event.target as HTMLInputElement;
-    const file = target.files?.[0];
-
-    readFile(file);
-  };
-  const readFile = (file: File | undefined) => {
-    if (!file) {
-      return;
+  const handleFileInput = async (event: ChangeEvent) => {
+    const fileContent = await processFileInput(event);
+    if (svgTextRef.current && fileContent) {
+      svgTextRef.current.value = fileContent;
     }
-    const reader = new FileReader();
-    reader.onload = (e: ProgressEvent<FileReader>) => {
-      const fileContent = e.target?.result as string;
-      if (svgTextRef.current && fileContent) {
-        svgTextRef.current.value = fileContent;
-      }
-    };
-    reader.readAsText(file);
   };
 
   return (
@@ -455,7 +424,7 @@ const SettingsForm = () => {
           <TabsTrigger value="import">Import SVGs</TabsTrigger>
           <TabsTrigger value="font">Dan Marshal Google Fonts</TabsTrigger>
           <TabsTrigger value="svgomg">SVG Optimizer</TabsTrigger>
-          <TabsTrigger value="spline">Lea Verou Spline Tool</TabsTrigger>
+          {/* <TabsTrigger value="spline">Lea Verou Spline Tool</TabsTrigger> */}
           <TabsTrigger value="drag">Draggable Area</TabsTrigger>
           <TabsTrigger value="empty">Hide</TabsTrigger>
         </TabsList>
@@ -567,16 +536,19 @@ const SettingsForm = () => {
             ></iframe>
           </div>
         </TabsContent>
-        <TabsContent value="spline">
+        {/* <TabsContent value="spline">
           <div className="flex flex-wrap justify-evenly bg-secondary rounded-xl p-4">
             <iframe
               className="w-3/4 aspect-video"
               src="https://cubic-bezier.com/"
             ></iframe>
           </div>
-        </TabsContent>
+        </TabsContent> */}
         <TabsContent value="drag">
-          <div className="flex flex-wrap justify-evenly bg-secondary rounded-xl p-4 w-full">
+          <div
+            className="flex flex-wrap justify-evenly bg-secondary rounded-xl p-4 w-full relative"
+            style={{ height: "500px" }}
+          >
             <SVGPlayground />
           </div>
         </TabsContent>

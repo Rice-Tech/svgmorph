@@ -36,6 +36,7 @@ export const Draggable = forwardRef<HTMLButtonElement, Props>(
     },
     ref
   ) {
+    console.log(label)
     return (
       <div
         className={classNames(
@@ -63,7 +64,7 @@ export const Draggable = forwardRef<HTMLButtonElement, Props>(
         >
           {children}
         </button>
-        {label ? <label>{label}</label> : null}
+        {/* {label ? <label>{label}</label> : null} */}
       </div>
     );
   }
